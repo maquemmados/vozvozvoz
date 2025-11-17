@@ -22,6 +22,9 @@ from scipy import stats
 import warnings
 import whisper
 import json
+import soundfile as sf
+from sklearn.cluster import KMeans
+from sklearn.preprocessing import StandardScaler
 
 warnings.filterwarnings('ignore')
 
@@ -329,6 +332,184 @@ class WordBasedVoiceAnalyzer:
             print(f"  ✓ F2: {self.results['f2_mean']:.0f} ± {self.results['f2_std']:.0f} Hz")
 
         return self.results
+
+    def export_word_audios(self, output_dir="word_audios"):
+        """
+        Exporta cada palabra como archivo WAV individual.
+
+        Args:
+            output_dir: Directorio donde guardar los audios
+        """
+        output_path = Path(output_dir)
+        output_path.mkdir(exist_ok=True)
+
+        print(f"\n  Exportando audios de palabras a: {output_dir}/")
+
+        for i, word_analysis in enumerate(self.words_analysis):
+            word_text = word_analysis['word'].replace('/', '_').replace(' ', '_')
+            filename = f"{self.name}_palabra_{i:02d}_{word_text}.wav"
+            filepath = output_path / filename
+
+            # Guardar audio
+            sf.write(filepath, word_analysis['audio'], self.sr)
+
+        print(f"  ✓ Exportadas {len(self.words_analysis)} palabras")
+
+
+def classify_vowels(all_vowels):
+    """
+    Clasifica vocales automáticamente usando k-means en el espacio F1-F2.
+
+    Args:
+        all_vowels: Lista de diccionarios con vocales (debe contener 'f1' y 'f2')
+
+    Returns:
+        Lista de vocales con campo 'vowel_class' añadido (0-4 para /a/, /e/, /i/, /o/, /u/)
+    """
+    if len(all_vowels) < 5:
+        print("⚠ No hay suficientes vocales para clasificación")
+        return all_vowels
+
+    print("\n" + "="*70)
+    print("CLASIFICACIÓN AUTOMÁTICA DE VOCALES")
+    print("="*70)
+
+    # Extraer F1 y F2
+    f1_values = np.array([v['f1'] for v in all_vowels]).reshape(-1, 1)
+    f2_values = np.array([v['f2'] for v in all_vowels]).reshape(-1, 1)
+
+    # Normalizar (para que F1 y F2 tengan peso similar)
+    scaler = StandardScaler()
+    features = np.hstack([f1_values, f2_values])
+    features_scaled = scaler.fit_transform(features)
+
+    # K-means con 5 clusters (para /a/, /e/, /i/, /o/, /u/)
+    kmeans = KMeans(n_clusters=5, random_state=42, n_init=10)
+    labels = kmeans.fit_predict(features_scaled)
+
+    # Asignar etiquetas fonéticas basadas en posición en espacio F1-F2
+    # Calcular centroides en espacio original
+    centroids_scaled = kmeans.cluster_centers_
+    centroids = scaler.inverse_transform(centroids_scaled)
+
+    # Mapear clusters a vocales basándose en F1 y F2
+    # /i/: F1 bajo, F2 alto
+    # /u/: F1 bajo, F2 bajo
+    # /a/: F1 alto, F2 medio
+    # /e/: F1 medio, F2 alto
+    # /o/: F1 medio, F2 bajo
+
+    cluster_to_vowel = {}
+    for cluster_id in range(5):
+        f1_cent = centroids[cluster_id, 0]
+        f2_cent = centroids[cluster_id, 1]
+
+        # Heurística simple para asignar vocal
+        if f1_cent < 450:  # F1 bajo
+            if f2_cent > 1800:
+                cluster_to_vowel[cluster_id] = '/i/'
+            else:
+                cluster_to_vowel[cluster_id] = '/u/'
+        elif f1_cent > 650:  # F1 alto
+            cluster_to_vowel[cluster_id] = '/a/'
+        else:  # F1 medio
+            if f2_cent > 1600:
+                cluster_to_vowel[cluster_id] = '/e/'
+            else:
+                cluster_to_vowel[cluster_id] = '/o/'
+
+    # Añadir clasificación a cada vocal
+    for i, vowel in enumerate(all_vowels):
+        vowel['cluster'] = int(labels[i])
+        vowel['vowel_class'] = cluster_to_vowel[labels[i]]
+
+    # Mostrar resultados
+    print(f"\n✓ Clasificadas {len(all_vowels)} vocales en 5 categorías:")
+    for cluster_id in range(5):
+        count = np.sum(labels == cluster_id)
+        vowel_name = cluster_to_vowel[cluster_id]
+        f1_mean = centroids[cluster_id, 0]
+        f2_mean = centroids[cluster_id, 1]
+        print(f"  {vowel_name}: {count} vocales (F1={f1_mean:.0f} Hz, F2={f2_mean:.0f} Hz)")
+
+    return all_vowels
+
+
+def analyze_by_vowel_type(girls_vowels, boys_vowels):
+    """
+    Análisis comparativo por tipo de vocal.
+
+    Args:
+        girls_vowels: Vocales de niñas (con campo 'vowel_class')
+        boys_vowels: Vocales de niños (con campo 'vowel_class')
+
+    Returns:
+        dict con resultados por vocal
+    """
+    print("\n" + "="*70)
+    print("ANÁLISIS POR TIPO DE VOCAL: NIÑOS vs NIÑAS")
+    print("="*70)
+
+    vowel_types = ['/a/', '/e/', '/i/', '/o/', '/u/']
+    results_by_vowel = {}
+
+    for vowel_type in vowel_types:
+        girls_v = [v for v in girls_vowels if v.get('vowel_class') == vowel_type]
+        boys_v = [v for v in boys_vowels if v.get('vowel_class') == vowel_type]
+
+        if len(girls_v) < 2 or len(boys_v) < 2:
+            print(f"\n{vowel_type}: Insuficientes muestras (niñas:{len(girls_v)}, niños:{len(boys_v)})")
+            continue
+
+        print(f"\n{vowel_type}:")
+        print(f"  Niñas: {len(girls_v)} muestras")
+        print(f"  Niños: {len(boys_v)} muestras")
+
+        results_by_vowel[vowel_type] = {}
+
+        # Comparar pitch
+        girls_pitch = [v['pitch'] for v in girls_v if v['pitch'] > 0]
+        boys_pitch = [v['pitch'] for v in boys_v if v['pitch'] > 0]
+
+        if len(girls_pitch) >= 2 and len(boys_pitch) >= 2:
+            t_stat, p_val = stats.ttest_ind(girls_pitch, boys_pitch)
+            results_by_vowel[vowel_type]['pitch'] = {
+                'girls_mean': np.mean(girls_pitch),
+                'boys_mean': np.mean(boys_pitch),
+                'p_value': p_val,
+                'significant': p_val < 0.05
+            }
+            print(f"  Pitch: niñas={np.mean(girls_pitch):.1f} Hz, niños={np.mean(boys_pitch):.1f} Hz, p={p_val:.4f} {'*' if p_val<0.05 else 'n.s.'}")
+
+        # Comparar F1
+        girls_f1 = [v['f1'] for v in girls_v]
+        boys_f1 = [v['f1'] for v in boys_v]
+
+        if len(girls_f1) >= 2 and len(boys_f1) >= 2:
+            t_stat, p_val = stats.ttest_ind(girls_f1, boys_f1)
+            results_by_vowel[vowel_type]['f1'] = {
+                'girls_mean': np.mean(girls_f1),
+                'boys_mean': np.mean(boys_f1),
+                'p_value': p_val,
+                'significant': p_val < 0.05
+            }
+            print(f"  F1: niñas={np.mean(girls_f1):.0f} Hz, niños={np.mean(boys_f1):.0f} Hz, p={p_val:.4f} {'*' if p_val<0.05 else 'n.s.'}")
+
+        # Comparar F2
+        girls_f2 = [v['f2'] for v in girls_v]
+        boys_f2 = [v['f2'] for v in boys_v]
+
+        if len(girls_f2) >= 2 and len(boys_f2) >= 2:
+            t_stat, p_val = stats.ttest_ind(girls_f2, boys_f2)
+            results_by_vowel[vowel_type]['f2'] = {
+                'girls_mean': np.mean(girls_f2),
+                'boys_mean': np.mean(boys_f2),
+                'p_value': p_val,
+                'significant': p_val < 0.05
+            }
+            print(f"  F2: niñas={np.mean(girls_f2):.0f} Hz, niños={np.mean(boys_f2):.0f} Hz, p={p_val:.4f} {'*' if p_val<0.05 else 'n.s.'}")
+
+    return results_by_vowel
 
 
 def compare_genders(analyzers):
@@ -641,11 +822,37 @@ def main():
         print(f"\n{'='*70}")
         analyzer = WordBasedVoiceAnalyzer(audio_file, transcriptions[audio_file])
         analyzer.analyze_all()
+
+        # NUEVO: Exportar audios de palabras individuales
+        analyzer.export_word_audios()
+
         analyzers.append(analyzer)
+
+    # NUEVO: Clasificar vocales automáticamente
+    all_vowels = []
+    for analyzer in analyzers:
+        all_vowels.extend(analyzer.vowels_analysis)
+
+    all_vowels = classify_vowels(all_vowels)
+
+    # Actualizar vocales en analyzers con clasificación
+    idx = 0
+    for analyzer in analyzers:
+        for i in range(len(analyzer.vowels_analysis)):
+            analyzer.vowels_analysis[i] = all_vowels[idx]
+            idx += 1
 
     # Comparar géneros
     print(f"\n{'='*70}")
     stats_results, girls_vowels, boys_vowels = compare_genders(analyzers)
+
+    # NUEVO: Análisis por tipo de vocal
+    vowel_type_results = analyze_by_vowel_type(girls_vowels, boys_vowels)
+
+    # Guardar resultados por tipo de vocal
+    with open('gender_by_vowel_stats.json', 'w', encoding='utf-8') as f:
+        json.dump(vowel_type_results, f, ensure_ascii=False, indent=2)
+    print("\n  ✓ gender_by_vowel_stats.json")
 
     # Visualizaciones
     create_comparison_visualizations(analyzers, stats_results, girls_vowels, boys_vowels)
@@ -659,11 +866,21 @@ def main():
     print("✅ ANÁLISIS COMPLETADO")
     print("="*70)
     print("\nArchivos generados:")
-    print("  • *_transcription.json - Transcripciones con timestamps")
-    print("  • gender_comparison_statistical.png - Comparaciones estadísticas")
-    print("  • vowel_spaces_overlap.png - Espacios vocálicos superpuestos")
-    print("  • gender_comparison_stats.json - Resultados estadísticos")
-    print("\n🔬 Conclusión relacionada con Funk & Simpson (2023):")
+    print("  📄 Transcripciones:")
+    print("    • *_transcription.json - Transcripciones con timestamps")
+    print("\n  🎵 Audios de palabras individuales:")
+    print("    • word_audios/*_palabra_*.wav - Archivos WAV de cada palabra")
+    print("\n  📊 Visualizaciones:")
+    print("    • gender_comparison_statistical.png - Comparaciones estadísticas")
+    print("    • vowel_spaces_overlap.png - Espacios vocálicos superpuestos")
+    print("\n  📈 Datos estadísticos:")
+    print("    • gender_comparison_stats.json - Resultados estadísticos generales")
+    print("    • gender_by_vowel_stats.json - Resultados por tipo de vocal (/a/, /e/, /i/, /o/, /u/)")
+    print("\n🔬 Análisis incluye:")
+    print("  ✓ Clasificación automática de vocales (k-means)")
+    print("  ✓ Comparación estadística por tipo de vocal")
+    print("  ✓ Relacionado con Funk & Simpson (2023) sobre percepción de género")
+    print("\n💡 Conclusión:")
     print("   Ver interpretación en la salida del análisis estadístico arriba")
     print("="*70)
 
