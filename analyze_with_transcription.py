@@ -309,7 +309,7 @@ class WordBasedVoiceAnalyzer:
             # Validar
             if f1 and f2 and f3 and not np.isnan(f1) and not np.isnan(f2) and not np.isnan(f3):
                 if f1 > 0 and f2 > f1 and f3 > f2 and f1 < 1500 and f2 < 3500:
-                    # Pitch
+                    # F0
                     pitch = call(word_snd, "To Pitch", 0.0, 150, 500)
                     f0 = call(pitch, "Get value at time", mid_time, "Hertz", "Linear")
 
@@ -371,7 +371,7 @@ class WordBasedVoiceAnalyzer:
         print(f"  ✓ Palabras analizadas: {len(self.words_analysis)}")
         print(f"  ✓ Vocales detectadas: {len(self.vowels_analysis)}")
         if self.results.get('pitch_mean'):
-            print(f"  ✓ Pitch medio: {self.results['pitch_mean']:.1f} ± {self.results['pitch_std']:.1f} Hz")
+            print(f"  ✓ F0 medio: {self.results['pitch_mean']:.1f} ± {self.results['pitch_std']:.1f} Hz")
         if self.results.get('f1_mean'):
             print(f"  ✓ F1: {self.results['f1_mean']:.0f} ± {self.results['f1_std']:.0f} Hz")
             print(f"  ✓ F2: {self.results['f2_mean']:.0f} ± {self.results['f2_std']:.0f} Hz")
@@ -608,7 +608,7 @@ def analyze_by_vowel_type(girls_vowels, boys_vowels):
                 'p_value': float(p_val),
                 'significant': bool(p_val < 0.05)
             }
-            print(f"  Pitch: niñas={np.mean(girls_pitch):.1f} Hz, niños={np.mean(boys_pitch):.1f} Hz, p={p_val:.4f} {'*' if p_val<0.05 else 'n.s.'}")
+            print(f"  F0: niñas={np.mean(girls_pitch):.1f} Hz, niños={np.mean(boys_pitch):.1f} Hz, p={p_val:.4f} {'*' if p_val<0.05 else 'n.s.'}")
 
         # Comparar F1
         girls_f1 = [v['f1'] for v in girls_v]
@@ -690,7 +690,7 @@ def compare_genders(analyzers):
     print("PRUEBAS ESTADÍSTICAS (t-test de Student)")
     print("-"*70)
 
-    # Pitch
+    # F0
     if girls_pitch and boys_pitch:
         t_stat, p_value = stats.ttest_ind(girls_pitch, boys_pitch)
         cohen_d = (np.mean(girls_pitch) - np.mean(boys_pitch)) / np.sqrt((np.std(girls_pitch)**2 + np.std(boys_pitch)**2) / 2)
@@ -706,7 +706,7 @@ def compare_genders(analyzers):
             'significant': bool(p_value < 0.05)
         }
 
-        print(f"\nPITCH:")
+        print(f"\nF0 (Frecuencia fundamental):")
         print(f"  Niñas: {np.mean(girls_pitch):.1f} ± {np.std(girls_pitch):.1f} Hz (n={len(girls_pitch)})")
         print(f"  Niños: {np.mean(boys_pitch):.1f} ± {np.std(boys_pitch):.1f} Hz (n={len(boys_pitch)})")
         print(f"  Diferencia: {abs(np.mean(girls_pitch) - np.mean(boys_pitch)):.1f} Hz")
@@ -769,7 +769,7 @@ def compare_genders(analyzers):
     Los papers sobre percepción de género en voces infantiles muestran que:
 
     1. Las diferencias ACÚSTICAS son PEQUEÑAS o INEXISTENTES
-       - Pitch: solapamiento considerable entre niños y niñas
+       - F0: solapamiento considerable entre niños y niñas
        - Formantes: diferencias mínimas antes de la pubertad
 
     2. Las diferencias PERCEPTUALES son GRANDES
@@ -779,14 +779,14 @@ def compare_genders(analyzers):
     3. HIPÓTESIS:
        - La percepción se basa en sutiles diferencias espectrales
        - O en pistas socio-fonéticas aprendidas
-       - No solo en pitch y formantes básicos
+       - No solo en F0 y formantes básicos
     """)
 
     if results.get('pitch'):
         if not results['pitch']['significant']:
-            print("    ✓ Nuestros datos CONFIRMAN: no hay diferencia significativa en pitch")
+            print("    ✓ Nuestros datos CONFIRMAN: no hay diferencia significativa en F0")
         else:
-            print(f"    ⚠ Nuestros datos muestran diferencia en pitch (p={results['pitch']['p_value']:.4f})")
+            print(f"    ⚠ Nuestros datos muestran diferencia en F0 (p={results['pitch']['p_value']:.4f})")
 
     if results.get('f1') and results.get('f2'):
         sig_count = sum([results['f1']['significant'], results['f2']['significant']])
@@ -816,9 +816,9 @@ def create_comparison_visualizations(analyzers, stats_results, girls_vowels, boy
     axes[0, 0].hist(boys_pitch, bins=30, alpha=0.6, color='#1E90FF', label='Niños', density=True)
     axes[0, 0].axvline(np.mean(girls_pitch), color='#FF1493', linestyle='--', linewidth=2)
     axes[0, 0].axvline(np.mean(boys_pitch), color='#1E90FF', linestyle='--', linewidth=2)
-    axes[0, 0].set_xlabel('Pitch (Hz)', fontweight='bold')
+    axes[0, 0].set_xlabel('F0 (Hz)', fontweight='bold')
     axes[0, 0].set_ylabel('Densidad', fontweight='bold')
-    axes[0, 0].set_title('Distribución de Pitch por Género', fontweight='bold')
+    axes[0, 0].set_title('Distribución de F0 por género', fontweight='bold')
     axes[0, 0].legend()
     axes[0, 0].grid(True, alpha=0.3)
 
@@ -827,8 +827,8 @@ def create_comparison_visualizations(analyzers, stats_results, girls_vowels, boy
     bp = axes[0, 1].boxplot(data_pitch, labels=['Niñas', 'Niños'], patch_artist=True)
     bp['boxes'][0].set_facecolor('#FF1493')
     bp['boxes'][1].set_facecolor('#1E90FF')
-    axes[0, 1].set_ylabel('Pitch (Hz)', fontweight='bold')
-    axes[0, 1].set_title('Comparación de Pitch', fontweight='bold')
+    axes[0, 1].set_ylabel('F0 (Hz)', fontweight='bold')
+    axes[0, 1].set_title('Comparación de F0', fontweight='bold')
     axes[0, 1].grid(True, alpha=0.3, axis='y')
 
     # Añadir significancia
