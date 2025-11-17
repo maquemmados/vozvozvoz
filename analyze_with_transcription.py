@@ -340,13 +340,26 @@ class WordBasedVoiceAnalyzer:
         Args:
             output_dir: Directorio donde guardar los audios
         """
+        import re
+
         output_path = Path(output_dir)
         output_path.mkdir(exist_ok=True)
 
         print(f"\n  Exportando audios de palabras a: {output_dir}/")
 
         for i, word_analysis in enumerate(self.words_analysis):
-            word_text = word_analysis['word'].replace('/', '_').replace(' ', '_')
+            # Sanitizar nombre de archivo (quitar caracteres no válidos en Windows/Linux)
+            word_text = word_analysis['word']
+            # Eliminar caracteres no válidos: < > : " / \ | ? *
+            word_text = re.sub(r'[<>:"/\\|?*]', '', word_text)
+            # Reemplazar espacios con guiones bajos
+            word_text = word_text.replace(' ', '_')
+            # Limitar longitud
+            word_text = word_text[:30] if len(word_text) > 30 else word_text
+            # Si queda vacío, usar índice
+            if not word_text:
+                word_text = f"palabra{i}"
+
             filename = f"{self.name}_palabra_{i:02d}_{word_text}.wav"
             filepath = output_path / filename
 
@@ -804,7 +817,9 @@ def main():
         print(f"   • {f.name}")
 
     # Transcribir con Whisper
-    transcriber = WhisperTranscriber(model_name="base")
+    # Modelo "large" es el más preciso (pero más lento)
+    # Opciones: tiny, base, small, medium, large
+    transcriber = WhisperTranscriber(model_name="large")
 
     transcriptions = {}
     for audio_file in audio_files:
