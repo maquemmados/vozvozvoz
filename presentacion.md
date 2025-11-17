@@ -113,7 +113,7 @@ Los rangos se **solapan completamente**. No hay diferencias estadísticamente si
 ## Las visualizaciones acústicas
 
 ### Espacio vocálico F1-F2
-![Comparación de vocales](./comparacion_vocales_rigurosa.png)
+![Comparación de vocales](./datos_para_presentacion/vowel_spaces_overlap.png)
 
 **Interpretación:** las elipses muestran la distribución de las vocales de cada hablante. El solapamiento es evidente.
 
@@ -122,7 +122,7 @@ Los rangos se **solapan completamente**. No hay diferencias estadísticamente si
 ## Las visualizaciones acústicas (II)
 
 ### Distribución del tono
-![Comparación de tono](./comparacion_pitch_rigurosa.png)
+![Comparación de tono](./datos_para_presentacion/gender_comparison_statistical.png)
 
 **Interpretación:** las barras de error muestran que los rangos de tono son muy similares entre niños y niñas.
 
@@ -147,13 +147,13 @@ Identificaron varios factores clave:
 
 1. **Pitch como predictor principal** (aunque con mucho solapamiento)
 2. **Espectro de sibilantes** (/s/, /z/): los niños tienden a producirlas con energía más baja
-3. **Correlación con conformidad de género**: Los niños que expresan mayor conformidad con estereotipos de género muestran diferencias más marcadas
+3. **Correlación con conformidad de género**: los niños que expresan mayor conformidad con estereotipos de género muestran diferencias más marcadas
 
 ---
 
 ## La respuesta: no es solo la anatomía
 
-### Factor 1: Diferencias comportamentales
+### Factor 1: diferencias comportamentales
 
 - Desde los 2-3 años, los niños internalizan estereotipos de género
 - Pueden **modificar voluntariamente** su voz para sonar más "masculinos" o "femeninos"
@@ -163,7 +163,7 @@ Identificaron varios factores clave:
 
 ## La respuesta: no es solo la anatomía (II)
 
-### Factor 2: Información prosódica
+### Factor 2: información prosódica
 
 - Patrones de entonación
 - Ritmo del habla
@@ -174,7 +174,7 @@ Identificaron varios factores clave:
 
 ## La respuesta: no es solo la anatomía (III)
 
-### Factor 3: Información contextual
+### Factor 3: información contextual
 
 - Duración del estímulo (mejor en oraciones que en vocales aisladas)
 - Conocimiento de la edad aproximada del hablante
@@ -228,20 +228,15 @@ La voz infantil nos muestra que el género **no es solo biología**:
 
 ---
 
-## Referencias principales
+## Preguntas para el debate
 
-**Barreda, S., & Assmann, P. F. (2021).** Perception of gender in children's voices. *Journal of the Acoustical Society of America*, 150(5), 3949-3963.
-- Demuestra que la percepción de género y edad están entrelazadas
-- Los oyentes usan información de edad de forma dependiente del contexto
+1. ¿Creéis que los niños son conscientes de que modifican su voz para sonar más "masculinos" o "femeninos"?
 
-**Funk, R., & Simpson, A. P. (2023).** The acoustic and perceptual correlates of gender in children's voices. *Journal of Speech, Language, and Hearing Research*, 66, 3346-3363.
-- Pitch como predictor principal, pero no único
-- Correlación con conformidad de género autorreportada
-- Importancia de los espectros de sibilantes
+2. Si las diferencias anatómicas son mínimas, ¿de dónde aprenden los niños estos patrones vocales?
 
-**Cartei, V., et al. (2019).** Children can control the expression of masculinity and femininity through the voice. *Royal Society Open Science*, 6(7), 190656.
-- Los niños pueden modificar voluntariamente su voz
-- Evidencia directa de la naturaleza performativa del género en la voz
+3. ¿Qué implicaciones tiene esto para nuestra comprensión del género como constructo social vs biológico?
+
+4. ¿Debería esto cambiar nuestra aproximación a la terapia de voz para niños transgénero?
 
 <!--
 ---
