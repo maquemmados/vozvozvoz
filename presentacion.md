@@ -113,7 +113,7 @@ Los rangos se **solapan completamente**. No hay diferencias estadísticamente si
 ## Las visualizaciones acústicas
 
 ### Espacio vocálico F1-F2
-![Comparación de vocales](datos_para_presentacion/vowel_spaces_overlap.png)
+<img src="vowel_spaces_overlap.png" alt="Comparación de vocales" style="max-height: 500px; max-width: 90%; object-fit: contain;">
 
 **Interpretación:** las elipses muestran la distribución de las vocales de cada hablante. El solapamiento es evidente.
 
@@ -122,7 +122,7 @@ Los rangos se **solapan completamente**. No hay diferencias estadísticamente si
 ## Las visualizaciones acústicas (II)
 
 ### Distribución del tono
-![Comparación de tono](datos_para_presentacion/gender_comparison_statistical.png)
+<img src="gender_comparison_statistical.png" alt="Comparación de tono" style="max-height: 500px; max-width: 90%; object-fit: contain;">
 
 **Interpretación:** las barras de error muestran que los rangos de tono son muy similares entre niños y niñas.
 
