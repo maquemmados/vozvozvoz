@@ -1,0 +1,7 @@
+Grabación,Duración (s),Pitch Medio (Hz),Pitch Rango (Hz),F1 (Hz),F2 (Hz),F3 (Hz),Intensidad (dB),Centroide Espectral (Hz)
+audio_ninia3,6.17,238.2,77-311,698,1380,2819,69.5,2079
+audio_ninia_1,12.42,303.7,123-494,672,1682,2866,68.9,2133
+audio_ninia_2,5.39,261.8,114-478,679,1533,2710,70.9,1605
+audio_ninio_1,9.15,282.8,81-497,683,1665,2676,68.5,2034
+audio_ninio_2,5.15,281.2,104-346,692,1699,2951,71.7,2388
+audio_ninio_3,7.39,303.8,168-473,691,1703,2917,71.1,2035
