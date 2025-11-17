@@ -406,30 +406,57 @@ def classify_vowels(all_vowels):
     centroids = scaler.inverse_transform(centroids_scaled)
 
     # Mapear clusters a vocales basándose en F1 y F2
-    # /i/: F1 bajo, F2 alto
-    # /u/: F1 bajo, F2 bajo
-    # /a/: F1 alto, F2 medio
-    # /e/: F1 medio, F2 alto
-    # /o/: F1 medio, F2 bajo
+    # Valores prototípicos para niños españoles (aproximados):
+    # /i/: F1~400, F2~2500 (alta, anterior)
+    # /e/: F1~550, F2~2000 (media, anterior)
+    # /a/: F1~850, F2~1400 (baja, central)
+    # /o/: F1~600, F2~1000 (media, posterior)
+    # /u/: F1~400, F2~900 (alta, posterior)
 
+    prototypes = {
+        '/i/': np.array([400, 2500]),
+        '/e/': np.array([550, 2000]),
+        '/a/': np.array([850, 1400]),
+        '/o/': np.array([600, 1000]),
+        '/u/': np.array([400, 900])
+    }
+
+    # Asignar cada cluster a la vocal más cercana (sin repeticiones)
     cluster_to_vowel = {}
-    for cluster_id in range(5):
-        f1_cent = centroids[cluster_id, 0]
-        f2_cent = centroids[cluster_id, 1]
+    used_vowels = set()
 
-        # Heurística simple para asignar vocal
-        if f1_cent < 450:  # F1 bajo
-            if f2_cent > 1800:
-                cluster_to_vowel[cluster_id] = '/i/'
-            else:
-                cluster_to_vowel[cluster_id] = '/u/'
-        elif f1_cent > 650:  # F1 alto
-            cluster_to_vowel[cluster_id] = '/a/'
-        else:  # F1 medio
-            if f2_cent > 1600:
-                cluster_to_vowel[cluster_id] = '/e/'
-            else:
-                cluster_to_vowel[cluster_id] = '/o/'
+    # Calcular distancias de cada cluster a cada prototipo
+    distances = {}
+    for cluster_id in range(5):
+        cluster_formants = centroids[cluster_id]
+        distances[cluster_id] = {}
+        for vowel, prototype in prototypes.items():
+            # Distancia euclidiana normalizada
+            dist = np.sqrt(((cluster_formants[0] - prototype[0]) / 500)**2 +
+                          ((cluster_formants[1] - prototype[1]) / 1000)**2)
+            distances[cluster_id][vowel] = dist
+
+    # Asignar clusters a vocales (greedy: asignar primero los más seguros)
+    for _ in range(5):
+        # Encontrar la mejor asignación (cluster, vocal) que minimice distancia
+        best_cluster = None
+        best_vowel = None
+        best_dist = float('inf')
+
+        for cluster_id in range(5):
+            if cluster_id in cluster_to_vowel:
+                continue
+            for vowel in prototypes.keys():
+                if vowel in used_vowels:
+                    continue
+                if distances[cluster_id][vowel] < best_dist:
+                    best_dist = distances[cluster_id][vowel]
+                    best_cluster = cluster_id
+                    best_vowel = vowel
+
+        if best_cluster is not None:
+            cluster_to_vowel[best_cluster] = best_vowel
+            used_vowels.add(best_vowel)
 
     # Añadir clasificación a cada vocal
     for i, vowel in enumerate(all_vowels):
