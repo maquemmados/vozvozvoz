@@ -161,8 +161,8 @@ class WordBasedVoiceAnalyzer:
             pitch_mean = 0
             pitch_values = []
 
-        # Detectar vocales dentro de la palabra
-        vowels = self._detect_vowels_in_word(word_snd, start_time)
+        # Detectar vocales dentro de la palabra (con transcripción para etiquetarlas)
+        vowels = self._detect_vowels_in_word(word_snd, start_time, word_info['word'])
 
         analysis = {
             'word': word_info['word'],
@@ -178,9 +178,30 @@ class WordBasedVoiceAnalyzer:
 
         return analysis
 
-    def _detect_vowels_in_word(self, word_snd, word_start_time):
-        """Detecta vocales dentro de una palabra."""
+    def _extract_vowels_from_text(self, word_text):
+        """Extrae las vocales de una palabra transcrita."""
+        # Vocales del español (minúsculas y mayúsculas, con/sin acentos)
+        vowel_chars = 'aeiouáéíóúAEIOUÁÉÍÓÚ'
+        vowel_map = {
+            'a': 'a', 'e': 'e', 'i': 'i', 'o': 'o', 'u': 'u',
+            'á': 'a', 'é': 'e', 'í': 'i', 'ó': 'o', 'ú': 'u',
+            'A': 'a', 'E': 'e', 'I': 'i', 'O': 'o', 'U': 'u',
+            'Á': 'a', 'É': 'e', 'Í': 'i', 'Ó': 'o', 'Ú': 'u'
+        }
+
         vowels = []
+        for char in word_text:
+            if char in vowel_chars:
+                vowels.append(vowel_map[char])
+
+        return vowels
+
+    def _detect_vowels_in_word(self, word_snd, word_start_time, word_text=None):
+        """Detecta vocales dentro de una palabra y las etiqueta usando la transcripción."""
+        vowels = []
+
+        # Extraer vocales esperadas del texto
+        expected_vowels = self._extract_vowels_from_text(word_text) if word_text else []
 
         try:
             duration = call(word_snd, "Get total duration")
@@ -243,6 +264,30 @@ class WordBasedVoiceAnalyzer:
                 )
                 if vowel:
                     vowels.append(vowel)
+
+            # Asignar etiquetas de vocales usando la transcripción
+            if expected_vowels and len(vowels) == len(expected_vowels):
+                # Coincidencia perfecta: asignar en orden
+                for i, vowel in enumerate(vowels):
+                    vowel['vowel_class'] = f'/{expected_vowels[i]}/'
+                    vowel['vowel_source'] = 'transcription'
+            elif expected_vowels:
+                # No coincide: reportar y usar heurística
+                print(f"      ⚠ '{word_text}': se esperaban {len(expected_vowels)} vocales {expected_vowels}, se detectaron {len(vowels)} segmentos")
+                # Intentar mapear lo mejor posible
+                if len(vowels) > 0:
+                    for i, vowel in enumerate(vowels):
+                        if i < len(expected_vowels):
+                            vowel['vowel_class'] = f'/{expected_vowels[i]}/'
+                            vowel['vowel_source'] = 'transcription_partial'
+                        else:
+                            vowel['vowel_class'] = '/unknown/'
+                            vowel['vowel_source'] = 'acoustic_only'
+            else:
+                # Sin transcripción: dejar sin etiquetar
+                for vowel in vowels:
+                    vowel['vowel_class'] = '/unknown/'
+                    vowel['vowel_source'] = 'acoustic_only'
 
         except Exception as e:
             pass
@@ -371,21 +416,45 @@ class WordBasedVoiceAnalyzer:
 
 def classify_vowels(all_vowels):
     """
-    Clasifica vocales automáticamente usando k-means en el espacio F1-F2.
+    Reporta estadísticas de vocales identificadas por transcripción y valida con k-means.
 
     Args:
-        all_vowels: Lista de diccionarios con vocales (debe contener 'f1' y 'f2')
+        all_vowels: Lista de diccionarios con vocales (ya contienen 'vowel_class' de transcripción)
 
     Returns:
-        Lista de vocales con campo 'vowel_class' añadido (0-4 para /a/, /e/, /i/, /o/, /u/)
+        Lista de vocales con validación de k-means añadida
     """
     if len(all_vowels) < 5:
-        print("⚠ No hay suficientes vocales para clasificación")
+        print("⚠ No hay suficientes vocales para análisis")
         return all_vowels
 
     print("\n" + "="*70)
-    print("CLASIFICACIÓN AUTOMÁTICA DE VOCALES")
+    print("IDENTIFICACIÓN DE VOCALES (Transcripción + Validación K-means)")
     print("="*70)
+
+    # Contar vocales identificadas por transcripción
+    from_transcription = [v for v in all_vowels if v.get('vowel_source') == 'transcription']
+    from_partial = [v for v in all_vowels if v.get('vowel_source') == 'transcription_partial']
+    from_acoustic = [v for v in all_vowels if v.get('vowel_source') == 'acoustic_only']
+
+    print(f"\n📝 Identificación basada en transcripción Whisper:")
+    print(f"  ✓ Perfecta coincidencia: {len(from_transcription)} vocales")
+    print(f"  ⚠ Coincidencia parcial: {len(from_partial)} vocales")
+    print(f"  ? Solo acústica: {len(from_acoustic)} vocales")
+
+    # Contar por tipo de vocal (de transcripción)
+    vowel_counts = {}
+    for vowel in all_vowels:
+        vclass = vowel.get('vowel_class', '/unknown/')
+        vowel_counts[vclass] = vowel_counts.get(vclass, 0) + 1
+
+    print(f"\n✓ Distribución de vocales (por transcripción):")
+    for vclass in sorted(vowel_counts.keys()):
+        count = vowel_counts[vclass]
+        print(f"  {vclass}: {count} vocales")
+
+    # Validación con K-means (solo informativa)
+    print(f"\n🔬 Validación con clustering K-means (comparación):")
 
     # Extraer F1 y F2
     f1_values = np.array([v['f1'] for v in all_vowels]).reshape(-1, 1)
@@ -458,19 +527,39 @@ def classify_vowels(all_vowels):
             cluster_to_vowel[best_cluster] = best_vowel
             used_vowels.add(best_vowel)
 
-    # Añadir clasificación a cada vocal
+    # Añadir clustering como validación (NO sobrescribe vowel_class de transcripción)
     for i, vowel in enumerate(all_vowels):
         vowel['cluster'] = int(labels[i])
-        vowel['vowel_class'] = cluster_to_vowel[labels[i]]
+        vowel['kmeans_vowel'] = cluster_to_vowel[labels[i]]  # K-means sugiere esta vocal
 
-    # Mostrar resultados
-    print(f"\n✓ Clasificadas {len(all_vowels)} vocales en 5 categorías:")
+    # Mostrar clusters detectados por k-means
+    print(f"  Clusters K-means encontrados:")
     for cluster_id in range(5):
         count = np.sum(labels == cluster_id)
         vowel_name = cluster_to_vowel[cluster_id]
         f1_mean = centroids[cluster_id, 0]
         f2_mean = centroids[cluster_id, 1]
-        print(f"  {vowel_name}: {count} vocales (F1={f1_mean:.0f} Hz, F2={f2_mean:.0f} Hz)")
+        print(f"    Cluster {cluster_id} → {vowel_name}: {count} vocales (F1={f1_mean:.0f}, F2={f2_mean:.0f})")
+
+    # Comparar transcripción vs k-means
+    agreements = 0
+    disagreements = 0
+    for vowel in all_vowels:
+        if vowel.get('vowel_source') == 'transcription':
+            if vowel['vowel_class'] == vowel['kmeans_vowel']:
+                agreements += 1
+            else:
+                disagreements += 1
+
+    if agreements + disagreements > 0:
+        accuracy = agreements / (agreements + disagreements) * 100
+        print(f"\n  Coincidencia Transcripción vs K-means: {agreements}/{agreements+disagreements} ({accuracy:.1f}%)")
+        if accuracy < 70:
+            print(f"  ⚠ Baja coincidencia - K-means puede no ser fiable para estos datos")
+        elif accuracy > 85:
+            print(f"  ✓ Alta coincidencia - ambos métodos concuerdan")
+
+    print(f"\n💡 Usando etiquetas de TRANSCRIPCIÓN como fuente principal")
 
     return all_vowels
 
