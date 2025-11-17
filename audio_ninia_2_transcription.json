@@ -1,0 +1,85 @@
+{
+  "text": "Y también nos tapa los ojos y dice, ¿quién soy? Poniendo otra voz.",
+  "language": "es",
+  "words": [
+    {
+      "word": "Y",
+      "start": 0.0,
+      "end": 0.68,
+      "duration": 0.68
+    },
+    {
+      "word": "también",
+      "start": 0.68,
+      "end": 0.88,
+      "duration": 0.19999999999999996
+    },
+    {
+      "word": "nos",
+      "start": 0.88,
+      "end": 1.18,
+      "duration": 0.29999999999999993
+    },
+    {
+      "word": "tapa",
+      "start": 1.18,
+      "end": 1.44,
+      "duration": 0.26
+    },
+    {
+      "word": "los",
+      "start": 1.44,
+      "end": 1.7,
+      "duration": 0.26
+    },
+    {
+      "word": "ojos",
+      "start": 1.7,
+      "end": 2.06,
+      "duration": 0.3600000000000001
+    },
+    {
+      "word": "y",
+      "start": 2.06,
+      "end": 2.44,
+      "duration": 0.3799999999999999
+    },
+    {
+      "word": "dice,",
+      "start": 2.44,
+      "end": 2.72,
+      "duration": 0.28000000000000025
+    },
+    {
+      "word": "¿quién",
+      "start": 2.8,
+      "end": 3.06,
+      "duration": 0.26000000000000023
+    },
+    {
+      "word": "soy?",
+      "start": 3.06,
+      "end": 3.24,
+      "duration": 0.18000000000000016
+    },
+    {
+      "word": "Poniendo",
+      "start": 3.58,
+      "end": 4.12,
+      "duration": 0.54
+    },
+    {
+      "word": "otra",
+      "start": 4.12,
+      "end": 4.6,
+      "duration": 0.47999999999999954
+    },
+    {
+      "word": "voz.",
+      "start": 4.6,
+      "end": 4.94,
+      "duration": 0.34000000000000075
+    }
+  ],
+  "num_words": 13
+}
