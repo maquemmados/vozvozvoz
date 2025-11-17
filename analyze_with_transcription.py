@@ -487,10 +487,10 @@ def analyze_by_vowel_type(girls_vowels, boys_vowels):
         if len(girls_pitch) >= 2 and len(boys_pitch) >= 2:
             t_stat, p_val = stats.ttest_ind(girls_pitch, boys_pitch)
             results_by_vowel[vowel_type]['pitch'] = {
-                'girls_mean': np.mean(girls_pitch),
-                'boys_mean': np.mean(boys_pitch),
-                'p_value': p_val,
-                'significant': p_val < 0.05
+                'girls_mean': float(np.mean(girls_pitch)),
+                'boys_mean': float(np.mean(boys_pitch)),
+                'p_value': float(p_val),
+                'significant': bool(p_val < 0.05)
             }
             print(f"  Pitch: niñas={np.mean(girls_pitch):.1f} Hz, niños={np.mean(boys_pitch):.1f} Hz, p={p_val:.4f} {'*' if p_val<0.05 else 'n.s.'}")
 
@@ -501,10 +501,10 @@ def analyze_by_vowel_type(girls_vowels, boys_vowels):
         if len(girls_f1) >= 2 and len(boys_f1) >= 2:
             t_stat, p_val = stats.ttest_ind(girls_f1, boys_f1)
             results_by_vowel[vowel_type]['f1'] = {
-                'girls_mean': np.mean(girls_f1),
-                'boys_mean': np.mean(boys_f1),
-                'p_value': p_val,
-                'significant': p_val < 0.05
+                'girls_mean': float(np.mean(girls_f1)),
+                'boys_mean': float(np.mean(boys_f1)),
+                'p_value': float(p_val),
+                'significant': bool(p_val < 0.05)
             }
             print(f"  F1: niñas={np.mean(girls_f1):.0f} Hz, niños={np.mean(boys_f1):.0f} Hz, p={p_val:.4f} {'*' if p_val<0.05 else 'n.s.'}")
 
@@ -515,10 +515,10 @@ def analyze_by_vowel_type(girls_vowels, boys_vowels):
         if len(girls_f2) >= 2 and len(boys_f2) >= 2:
             t_stat, p_val = stats.ttest_ind(girls_f2, boys_f2)
             results_by_vowel[vowel_type]['f2'] = {
-                'girls_mean': np.mean(girls_f2),
-                'boys_mean': np.mean(boys_f2),
-                'p_value': p_val,
-                'significant': p_val < 0.05
+                'girls_mean': float(np.mean(girls_f2)),
+                'boys_mean': float(np.mean(boys_f2)),
+                'p_value': float(p_val),
+                'significant': bool(p_val < 0.05)
             }
             print(f"  F2: niñas={np.mean(girls_f2):.0f} Hz, niños={np.mean(boys_f2):.0f} Hz, p={p_val:.4f} {'*' if p_val<0.05 else 'n.s.'}")
 
@@ -580,14 +580,14 @@ def compare_genders(analyzers):
         cohen_d = (np.mean(girls_pitch) - np.mean(boys_pitch)) / np.sqrt((np.std(girls_pitch)**2 + np.std(boys_pitch)**2) / 2)
 
         results['pitch'] = {
-            'girls_mean': np.mean(girls_pitch),
-            'girls_std': np.std(girls_pitch),
-            'boys_mean': np.mean(boys_pitch),
-            'boys_std': np.std(boys_pitch),
-            't_statistic': t_stat,
-            'p_value': p_value,
-            'cohen_d': cohen_d,
-            'significant': p_value < 0.05
+            'girls_mean': float(np.mean(girls_pitch)),
+            'girls_std': float(np.std(girls_pitch)),
+            'boys_mean': float(np.mean(boys_pitch)),
+            'boys_std': float(np.std(boys_pitch)),
+            't_statistic': float(t_stat),
+            'p_value': float(p_value),
+            'cohen_d': float(cohen_d),
+            'significant': bool(p_value < 0.05)
         }
 
         print(f"\nPITCH:")
@@ -604,14 +604,14 @@ def compare_genders(analyzers):
         cohen_d = (np.mean(girls_f1) - np.mean(boys_f1)) / np.sqrt((np.std(girls_f1)**2 + np.std(boys_f1)**2) / 2)
 
         results['f1'] = {
-            'girls_mean': np.mean(girls_f1),
-            'girls_std': np.std(girls_f1),
-            'boys_mean': np.mean(boys_f1),
-            'boys_std': np.std(boys_f1),
-            't_statistic': t_stat,
-            'p_value': p_value,
-            'cohen_d': cohen_d,
-            'significant': p_value < 0.05
+            'girls_mean': float(np.mean(girls_f1)),
+            'girls_std': float(np.std(girls_f1)),
+            'boys_mean': float(np.mean(boys_f1)),
+            'boys_std': float(np.std(boys_f1)),
+            't_statistic': float(t_stat),
+            'p_value': float(p_value),
+            'cohen_d': float(cohen_d),
+            'significant': bool(p_value < 0.05)
         }
 
         print(f"\nF1 (Primera Formante):")
@@ -628,14 +628,14 @@ def compare_genders(analyzers):
         cohen_d = (np.mean(girls_f2) - np.mean(boys_f2)) / np.sqrt((np.std(girls_f2)**2 + np.std(boys_f2)**2) / 2)
 
         results['f2'] = {
-            'girls_mean': np.mean(girls_f2),
-            'girls_std': np.std(girls_f2),
-            'boys_mean': np.mean(boys_f2),
-            'boys_std': np.std(boys_f2),
-            't_statistic': t_stat,
-            'p_value': p_value,
-            'cohen_d': cohen_d,
-            'significant': p_value < 0.05
+            'girls_mean': float(np.mean(girls_f2)),
+            'girls_std': float(np.std(girls_f2)),
+            'boys_mean': float(np.mean(boys_f2)),
+            'boys_std': float(np.std(boys_f2)),
+            't_statistic': float(t_stat),
+            'p_value': float(p_value),
+            'cohen_d': float(cohen_d),
+            'significant': bool(p_value < 0.05)
         }
 
         print(f"\nF2 (Segunda Formante):")
