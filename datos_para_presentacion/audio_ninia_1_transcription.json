@@ -1,0 +1,199 @@
+{
+  "text": "Estamos en Educa, el que estaba detrás de mi amiga la ha empujado sin querer y pues que se ha caído de boca y se ha caído y ha hecho el pino.",
+  "language": "es",
+  "words": [
+    {
+      "word": "Estamos",
+      "start": 0.0,
+      "end": 0.28,
+      "duration": 0.28
+    },
+    {
+      "word": "en",
+      "start": 0.28,
+      "end": 0.46,
+      "duration": 0.18
+    },
+    {
+      "word": "Educa,",
+      "start": 0.46,
+      "end": 0.9,
+      "duration": 0.44
+    },
+    {
+      "word": "el",
+      "start": 1.06,
+      "end": 1.38,
+      "duration": 0.31999999999999984
+    },
+    {
+      "word": "que",
+      "start": 1.38,
+      "end": 1.66,
+      "duration": 0.28
+    },
+    {
+      "word": "estaba",
+      "start": 1.66,
+      "end": 1.96,
+      "duration": 0.30000000000000004
+    },
+    {
+      "word": "detrás",
+      "start": 1.96,
+      "end": 2.38,
+      "duration": 0.41999999999999993
+    },
+    {
+      "word": "de",
+      "start": 2.38,
+      "end": 2.52,
+      "duration": 0.14000000000000012
+    },
+    {
+      "word": "mi",
+      "start": 2.52,
+      "end": 2.62,
+      "duration": 0.10000000000000009
+    },
+    {
+      "word": "amiga",
+      "start": 2.62,
+      "end": 2.88,
+      "duration": 0.2599999999999998
+    },
+    {
+      "word": "la",
+      "start": 2.88,
+      "end": 3.04,
+      "duration": 0.16000000000000014
+    },
+    {
+      "word": "ha",
+      "start": 3.04,
+      "end": 3.12,
+      "duration": 0.08000000000000007
+    },
+    {
+      "word": "empujado",
+      "start": 3.12,
+      "end": 3.56,
+      "duration": 0.43999999999999995
+    },
+    {
+      "word": "sin",
+      "start": 3.56,
+      "end": 3.74,
+      "duration": 0.18000000000000016
+    },
+    {
+      "word": "querer",
+      "start": 3.74,
+      "end": 4.12,
+      "duration": 0.3799999999999999
+    },
+    {
+      "word": "y",
+      "start": 4.12,
+      "end": 4.76,
+      "duration": 0.6399999999999997
+    },
+    {
+      "word": "pues",
+      "start": 4.76,
+      "end": 5.14,
+      "duration": 0.3799999999999999
+    },
+    {
+      "word": "que",
+      "start": 5.14,
+      "end": 5.44,
+      "duration": 0.3000000000000007
+    },
+    {
+      "word": "se",
+      "start": 5.44,
+      "end": 5.7,
+      "duration": 0.2599999999999998
+    },
+    {
+      "word": "ha",
+      "start": 5.7,
+      "end": 5.82,
+      "duration": 0.1200000000000001
+    },
+    {
+      "word": "caído",
+      "start": 5.82,
+      "end": 6.52,
+      "duration": 0.6999999999999993
+    },
+    {
+      "word": "de",
+      "start": 6.52,
+      "end": 7.18,
+      "duration": 0.6600000000000001
+    },
+    {
+      "word": "boca",
+      "start": 7.18,
+      "end": 8.24,
+      "duration": 1.0600000000000005
+    },
+    {
+      "word": "y",
+      "start": 8.24,
+      "end": 9.06,
+      "duration": 0.8200000000000003
+    },
+    {
+      "word": "se",
+      "start": 9.06,
+      "end": 9.26,
+      "duration": 0.1999999999999993
+    },
+    {
+      "word": "ha",
+      "start": 9.26,
+      "end": 9.42,
+      "duration": 0.16000000000000014
+    },
+    {
+      "word": "caído",
+      "start": 9.42,
+      "end": 9.88,
+      "duration": 0.46000000000000085
+    },
+    {
+      "word": "y",
+      "start": 9.88,
+      "end": 10.32,
+      "duration": 0.4399999999999995
+    },
+    {
+      "word": "ha",
+      "start": 10.32,
+      "end": 10.78,
+      "duration": 0.4599999999999991
+    },
+    {
+      "word": "hecho",
+      "start": 10.78,
+      "end": 11.06,
+      "duration": 0.28000000000000114
+    },
+    {
+      "word": "el",
+      "start": 11.06,
+      "end": 11.2,
+      "duration": 0.1399999999999988
+    },
+    {
+      "word": "pino.",
+      "start": 11.2,
+      "end": 11.58,
+      "duration": 0.3800000000000008
+    }
+  ],
+  "num_words": 32
+}

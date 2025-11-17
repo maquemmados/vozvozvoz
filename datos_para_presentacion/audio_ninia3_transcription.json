@@ -1,0 +1,67 @@
+{
+  "text": "Siempre, bueno, me está haciendo cosquillas o está jugando conmigo.",
+  "language": "es",
+  "words": [
+    {
+      "word": "Siempre,",
+      "start": 0.0,
+      "end": 0.44,
+      "duration": 0.44
+    },
+    {
+      "word": "bueno,",
+      "start": 0.46,
+      "end": 0.78,
+      "duration": 0.32
+    },
+    {
+      "word": "me",
+      "start": 0.88,
+      "end": 1.24,
+      "duration": 0.36
+    },
+    {
+      "word": "está",
+      "start": 1.24,
+      "end": 1.58,
+      "duration": 0.3400000000000001
+    },
+    {
+      "word": "haciendo",
+      "start": 1.58,
+      "end": 2.12,
+      "duration": 0.54
+    },
+    {
+      "word": "cosquillas",
+      "start": 2.12,
+      "end": 3.06,
+      "duration": 0.94
+    },
+    {
+      "word": "o",
+      "start": 3.06,
+      "end": 4.0,
+      "duration": 0.94
+    },
+    {
+      "word": "está",
+      "start": 4.0,
+      "end": 4.6,
+      "duration": 0.5999999999999996
+    },
+    {
+      "word": "jugando",
+      "start": 4.6,
+      "end": 5.1,
+      "duration": 0.5
+    },
+    {
+      "word": "conmigo.",
+      "start": 5.1,
+      "end": 5.74,
+      "duration": 0.6400000000000006
+    }
+  ],
+  "num_words": 10
+}

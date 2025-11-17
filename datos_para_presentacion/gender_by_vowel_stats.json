@@ -1,0 +1,102 @@
+{
+  "/a/": {
+    "pitch": {
+      "girls_mean": 279.5456431834757,
+      "boys_mean": 288.73851361608274,
+      "p_value": 0.5876245865172565,
+      "significant": false
+    },
+    "f1": {
+      "girls_mean": 734.9101843318894,
+      "boys_mean": 689.7651873864304,
+      "p_value": 0.5133203912110812,
+      "significant": false
+    },
+    "f2": {
+      "girls_mean": 1656.3684085576997,
+      "boys_mean": 1594.4826007583806,
+      "p_value": 0.7847228918080587,
+      "significant": false
+    }
+  },
+  "/e/": {
+    "pitch": {
+      "girls_mean": 286.15714676418344,
+      "boys_mean": 291.2445178309933,
+      "p_value": 0.7536599158093447,
+      "significant": false
+    },
+    "f1": {
+      "girls_mean": 639.9816881903363,
+      "boys_mean": 638.9678215400519,
+      "p_value": 0.9832883877237408,
+      "significant": false
+    },
+    "f2": {
+      "girls_mean": 1488.0379049592211,
+      "boys_mean": 1567.083209255023,
+      "p_value": 0.705777577701439,
+      "significant": false
+    }
+  },
+  "/i/": {
+    "pitch": {
+      "girls_mean": 285.81171835243833,
+      "boys_mean": 265.40990518495045,
+      "p_value": 0.29980278588799497,
+      "significant": false
+    },
+    "f1": {
+      "girls_mean": 560.403223280155,
+      "boys_mean": 605.9050606138918,
+      "p_value": 0.5845492402220618,
+      "significant": false
+    },
+    "f2": {
+      "girls_mean": 1454.474117967871,
+      "boys_mean": 1525.4764945215588,
+      "p_value": 0.7204953090913632,
+      "significant": false
+    }
+  },
+  "/o/": {
+    "pitch": {
+      "girls_mean": 264.8617270065878,
+      "boys_mean": 291.65379580802255,
+      "p_value": 0.1437594287716113,
+      "significant": false
+    },
+    "f1": {
+      "girls_mean": 682.9641972549414,
+      "boys_mean": 674.4595993077453,
+      "p_value": 0.8921629546759752,
+      "significant": false
+    },
+    "f2": {
+      "girls_mean": 1386.3248064871802,
+      "boys_mean": 1681.4138383582354,
+      "p_value": 0.14240142528751404,
+      "significant": false
+    }
+  },
+  "/u/": {
+    "pitch": {
+      "girls_mean": 282.1538174039736,
+      "boys_mean": 311.29063249347263,
+      "p_value": 0.22162715956778473,
+      "significant": false
+    },
+    "f1": {
+      "girls_mean": 536.7390353172359,
+      "boys_mean": 603.427392281269,
+      "p_value": 0.361309277073239,
+      "significant": false
+    },
+    "f2": {
+      "girls_mean": 1247.6470240430708,
+      "boys_mean": 1528.7399268429006,
+      "p_value": 0.25758210379438073,
+      "significant": false
+    }
+  }
+}
