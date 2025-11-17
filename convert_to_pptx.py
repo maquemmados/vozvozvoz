@@ -1,176 +1,207 @@
 #!/usr/bin/env python3
 from pptx import Presentation
 from pptx.util import Inches, Pt
-from pptx.enum.text import PP_ALIGN, PP_PARAGRAPH_ALIGNMENT
+from pptx.enum.text import PP_ALIGN
 from pptx.dml.color import RGBColor
 from pptx.enum.shapes import MSO_SHAPE
-import re
 import os
 
-def create_presentation():
-    prs = Presentation()
-    prs.slide_width = Inches(10)
-    prs.slide_height = Inches(7.5)
-    return prs
+prs = Presentation()
+prs.slide_width = Inches(10)
+prs.slide_height = Inches(7.5)
 
-def add_slide_with_title(prs, title, content_top=1.3):
-    """Crear diapositiva con título"""
-    slide = prs.slides.add_slide(prs.slide_layouts[6])  # Blanco
+# Color principal: ROJO
+PRIMARY_RED = RGBColor(192, 57, 43)
+DARK_RED = RGBColor(142, 68, 73)
+LIGHT_GRAY = RGBColor(236, 240, 241)
+DARK_GRAY = RGBColor(52, 73, 94)
 
-    # Fondo de título
-    title_shape = slide.shapes.add_shape(
-        MSO_SHAPE.RECTANGLE,
-        Inches(0), Inches(0),
-        Inches(10), Inches(1.1)
-    )
-    title_shape.fill.solid()
-    title_shape.fill.fore_color.rgb = RGBColor(52, 152, 219)
-    title_shape.line.fill.background()
-
-    # Título
-    title_box = slide.shapes.add_textbox(Inches(0.3), Inches(0.25), Inches(9.4), Inches(0.7))
-    tf = title_box.text_frame
-    tf.text = title
-    p = tf.paragraphs[0]
-    p.font.size = Pt(36)
-    p.font.bold = True
-    p.font.color.rgb = RGBColor(255, 255, 255)
-    p.alignment = PP_ALIGN.CENTER
-
-    return slide, content_top
-
-def add_title_slide(prs):
-    """Diapositiva de título principal"""
+def add_title_slide():
+    """Portada"""
     slide = prs.slides.add_slide(prs.slide_layouts[6])
-
-    # Fondo
     slide.background.fill.solid()
-    slide.background.fill.fore_color.rgb = RGBColor(44, 62, 80)
+    slide.background.fill.fore_color.rgb = DARK_GRAY
 
-    # Título
-    title_box = slide.shapes.add_textbox(Inches(1), Inches(2.5), Inches(8), Inches(2))
+    title = slide.shapes.add_textbox(Inches(0.5), Inches(2), Inches(9), Inches(3.5))
+    tf = title.text_frame
+    tf.word_wrap = True
+
+    p1 = tf.paragraphs[0]
+    p1.text = "¿Niño o niña?"
+    p1.font.size = Pt(54)
+    p1.font.bold = True
+    p1.font.color.rgb = RGBColor(255, 255, 255)
+    p1.alignment = PP_ALIGN.CENTER
+
+    p2 = tf.add_paragraph()
+    p2.text = "La percepción del género en las voces infantiles"
+    p2.font.size = Pt(38)
+    p2.font.color.rgb = PRIMARY_RED
+    p2.alignment = PP_ALIGN.CENTER
+
+def add_header(slide, title_text):
+    """Agregar encabezado rojo"""
+    header = slide.shapes.add_shape(
+        MSO_SHAPE.RECTANGLE,
+        Inches(0), Inches(0), Inches(10), Inches(1)
+    )
+    header.fill.solid()
+    header.fill.fore_color.rgb = PRIMARY_RED
+    header.line.fill.background()
+
+    title_box = slide.shapes.add_textbox(Inches(0.2), Inches(0.15), Inches(9.6), Inches(0.7))
     tf = title_box.text_frame
-    tf.text = "¿Niño o niña?\nLa percepción del género en las voces infantiles"
-    for p in tf.paragraphs:
-        p.font.size = Pt(48)
-        p.font.bold = True
-        p.font.color.rgb = RGBColor(255, 255, 255)
-        p.alignment = PP_ALIGN.CENTER
+    tf.text = title_text
+    tf.paragraphs[0].font.size = Pt(34)
+    tf.paragraphs[0].font.bold = True
+    tf.paragraphs[0].font.color.rgb = RGBColor(255, 255, 255)
+    tf.paragraphs[0].alignment = PP_ALIGN.CENTER
 
-    return slide
+def add_audio_slides():
+    """Diapositivas de audio con reproductores embebidos"""
 
-def add_audio_slide(prs, slide_num, audios_info):
-    """Diapositiva con audios"""
-    title = f"Actividad inicial{''.join([' (II)', ' (III)'][slide_num-1:slide_num]) if slide_num > 1 else ': ¿Quién está hablando?'}"
-    slide, y = add_slide_with_title(prs, title)
+    # Slide 1: Audios 1-2
+    slide = prs.slides.add_slide(prs.slide_layouts[6])
+    add_header(slide, "Actividad inicial: ¿Quién está hablando?")
 
-    if slide_num == 1:
-        # Subtítulo
-        text_box = slide.shapes.add_textbox(Inches(0.5), Inches(y), Inches(9), Inches(0.6))
-        tf = text_box.text_frame
-        tf.text = "Escuchad estas voces y responded: ¿es un niño o una niña?"
-        tf.paragraphs[0].font.size = Pt(24)
-        tf.paragraphs[0].alignment = PP_ALIGN.CENTER
-        y += 0.8
-    else:
-        y += 0.3
+    subtitle = slide.shapes.add_textbox(Inches(0.5), Inches(1.2), Inches(9), Inches(0.6))
+    tf = subtitle.text_frame
+    tf.text = "Escuchad estas voces y responded: ¿es un niño o una niña?"
+    tf.paragraphs[0].font.size = Pt(26)
+    tf.paragraphs[0].alignment = PP_ALIGN.CENTER
+    tf.paragraphs[0].font.bold = True
 
-    # Agregar audios
-    for idx, (audio_num, audio_file) in enumerate(audios_info):
-        col = idx % 2
-        row = idx // 2
+    audios = [("Audio 1", "audio_ninio_2.wav", 2, 2.1), ("Audio 2", "audio_ninia_1.wav", 6, 2.1)]
+    for label, file, x, y in audios:
+        # Marco
+        box = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(x-0.2), Inches(y), Inches(3), Inches(3))
+        box.fill.solid()
+        box.fill.fore_color.rgb = LIGHT_GRAY
+        box.line.color.rgb = PRIMARY_RED
+        box.line.width = Pt(3)
 
-        x = 1.5 + (col * 5)
-        audio_y = y + (row * 2)
+        # Label
+        lbl = slide.shapes.add_textbox(Inches(x), Inches(y+0.3), Inches(2.6), Inches(0.5))
+        lbl.text_frame.text = label
+        lbl.text_frame.paragraphs[0].font.size = Pt(28)
+        lbl.text_frame.paragraphs[0].font.bold = True
+        lbl.text_frame.paragraphs[0].alignment = PP_ALIGN.CENTER
 
-        # Cuadro para el audio
-        rect = slide.shapes.add_shape(
-            MSO_SHAPE.ROUNDED_RECTANGLE,
-            Inches(x - 0.3), Inches(audio_y),
-            Inches(3), Inches(1.5)
-        )
-        rect.fill.solid()
-        rect.fill.fore_color.rgb = RGBColor(236, 240, 241)
-        rect.line.color.rgb = RGBColor(52, 152, 219)
-        rect.line.width = Pt(2)
+        # Audio embebido
+        if os.path.exists(file):
+            slide.shapes.add_movie(file, Inches(x+0.5), Inches(y+1), Inches(1.5), Inches(1.5))
 
-        # Texto "Audio X"
-        label_box = slide.shapes.add_textbox(Inches(x - 0.2), Inches(audio_y + 0.1), Inches(2.6), Inches(0.4))
-        tf = label_box.text_frame
-        tf.text = f"Audio {audio_num}"
-        tf.paragraphs[0].font.size = Pt(22)
-        tf.paragraphs[0].font.bold = True
-        tf.paragraphs[0].alignment = PP_ALIGN.CENTER
+    # Slide 2: Audios 3-4
+    slide = prs.slides.add_slide(prs.slide_layouts[6])
+    add_header(slide, "Actividad inicial (II)")
 
-        # Insertar audio como objeto de medios
-        if os.path.exists(audio_file):
-            try:
-                # PowerPoint embebe el audio y muestra un ícono
-                slide.shapes.add_movie(
-                    audio_file,
-                    Inches(x + 0.5), Inches(audio_y + 0.5),
-                    Inches(1), Inches(0.8),
-                    poster_frame_image=None,
-                    mime_type='audio/wav'
-                )
-            except Exception as e:
-                print(f"Error con audio {audio_file}: {e}")
-                # Fallback: indicador visual
-                audio_text = slide.shapes.add_textbox(Inches(x), Inches(audio_y + 0.6), Inches(2.2), Inches(0.6))
-                tf = audio_text.text_frame
-                tf.text = f"🔊 {audio_file}"
-                tf.paragraphs[0].font.size = Pt(14)
-                tf.paragraphs[0].alignment = PP_ALIGN.CENTER
+    audios = [("Audio 3", "audio_ninio_3.wav", 2, 2), ("Audio 4", "audio_ninia3.wav", 6, 2)]
+    for label, file, x, y in audios:
+        box = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(x-0.2), Inches(y), Inches(3), Inches(3.5))
+        box.fill.solid()
+        box.fill.fore_color.rgb = LIGHT_GRAY
+        box.line.color.rgb = PRIMARY_RED
+        box.line.width = Pt(3)
 
-    # Pregunta final solo en última diapositiva de audios
-    if slide_num == 3:
-        question_box = slide.shapes.add_textbox(Inches(0.5), Inches(6.5), Inches(9), Inches(0.8))
-        tf = question_box.text_frame
-        tf.text = "Pregunta: ¿habéis podido identificar el género de cada voz? ¿Con qué grado de certeza?"
-        p = tf.paragraphs[0]
-        p.font.size = Pt(20)
-        p.font.bold = True
-        p.font.color.rgb = RGBColor(192, 57, 43)
-        p.alignment = PP_ALIGN.CENTER
+        lbl = slide.shapes.add_textbox(Inches(x), Inches(y+0.3), Inches(2.6), Inches(0.5))
+        lbl.text_frame.text = label
+        lbl.text_frame.paragraphs[0].font.size = Pt(28)
+        lbl.text_frame.paragraphs[0].font.bold = True
+        lbl.text_frame.paragraphs[0].alignment = PP_ALIGN.CENTER
 
-def add_text_slide(prs, title, subtitle, bullets):
-    """Diapositiva con texto y viñetas"""
-    slide, y = add_slide_with_title(prs, title)
+        if os.path.exists(file):
+            slide.shapes.add_movie(file, Inches(x+0.5), Inches(y+1.2), Inches(1.5), Inches(1.5))
 
-    if subtitle:
-        sub_box = slide.shapes.add_textbox(Inches(0.5), Inches(y), Inches(9), Inches(0.6))
-        tf = sub_box.text_frame
-        tf.text = subtitle
-        tf.paragraphs[0].font.size = Pt(28)
-        tf.paragraphs[0].font.color.rgb = RGBColor(85, 85, 85)
-        y += 0.7
+    # Slide 3: Audios 5-6 + Pregunta
+    slide = prs.slides.add_slide(prs.slide_layouts[6])
+    add_header(slide, "Actividad inicial (III)")
 
-    if bullets:
-        for bullet in bullets:
-            bullet_box = slide.shapes.add_textbox(Inches(0.8), Inches(y), Inches(8.5), Inches(0.5))
-            tf = bullet_box.text_frame
-            tf.text = bullet
-            p = tf.paragraphs[0]
-            p.font.size = Pt(22)
-            p.level = 0
-            y += 0.5
+    audios = [("Audio 5", "audio_ninio_1.wav", 2, 1.5), ("Audio 6", "audio_ninia_2.wav", 6, 1.5)]
+    for label, file, x, y in audios:
+        box = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(x-0.2), Inches(y), Inches(3), Inches(3))
+        box.fill.solid()
+        box.fill.fore_color.rgb = LIGHT_GRAY
+        box.line.color.rgb = PRIMARY_RED
+        box.line.width = Pt(3)
 
-def add_table_slide(prs, title):
-    """Diapositiva con tabla de datos"""
-    slide, y = add_slide_with_title(prs, title)
+        lbl = slide.shapes.add_textbox(Inches(x), Inches(y+0.3), Inches(2.6), Inches(0.5))
+        lbl.text_frame.text = label
+        lbl.text_frame.paragraphs[0].font.size = Pt(28)
+        lbl.text_frame.paragraphs[0].font.bold = True
+        lbl.text_frame.paragraphs[0].alignment = PP_ALIGN.CENTER
 
-    sub_box = slide.shapes.add_textbox(Inches(0.5), Inches(y), Inches(9), Inches(0.5))
-    tf = sub_box.text_frame
-    tf.text = "Parámetros de las grabaciones que escuchasteis"
+        if os.path.exists(file):
+            slide.shapes.add_movie(file, Inches(x+0.5), Inches(y+1), Inches(1.5), Inches(1.5))
+
+    question = slide.shapes.add_textbox(Inches(0.5), Inches(5.5), Inches(9), Inches(1.5))
+    tf = question.text_frame
+    tf.word_wrap = True
+    tf.text = "Pregunta: ¿habéis podido identificar el género de cada voz?\n¿Con qué grado de certeza?"
     tf.paragraphs[0].font.size = Pt(24)
-    tf.paragraphs[0].font.color.rgb = RGBColor(85, 85, 85)
-    y += 0.6
+    tf.paragraphs[0].font.bold = True
+    tf.paragraphs[0].font.color.rgb = PRIMARY_RED
+    tf.paragraphs[0].alignment = PP_ALIGN.CENTER
 
-    # Crear tabla
-    rows, cols = 7, 7
-    table = slide.shapes.add_table(rows, cols, Inches(0.3), Inches(y), Inches(9.4), Inches(3.5)).table
+def add_enigma_slide():
+    """El enigma científico"""
+    slide = prs.slides.add_slide(prs.slide_layouts[6])
+    add_header(slide, "El enigma científico")
 
-    # Datos
+    y = 1.3
+
+    # Subtítulo
+    sub = slide.shapes.add_textbox(Inches(0.5), Inches(y), Inches(9), Inches(0.5))
+    sub.text_frame.text = "Lo que dice la investigación"
+    sub.text_frame.paragraphs[0].font.size = Pt(28)
+    sub.text_frame.paragraphs[0].font.color.rgb = DARK_GRAY
+    sub.text_frame.paragraphs[0].font.bold = True
+    y += 0.7
+
+    # Texto principal
+    txt = slide.shapes.add_textbox(Inches(0.7), Inches(y), Inches(8.6), Inches(1))
+    tf = txt.text_frame
+    tf.word_wrap = True
+    tf.text = "Según Funk & Simpson (2023), identificamos el género de voces infantiles con una precisión del 70-84%, muy por encima del azar, pero:"
+    tf.paragraphs[0].font.size = Pt(24)
+    y += 1.2
+
+    # Cita
+    quote_box = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(0.8), Inches(y), Inches(8.4), Inches(1.8))
+    quote_box.fill.solid()
+    quote_box.fill.fore_color.rgb = LIGHT_GRAY
+    quote_box.line.color.rgb = PRIMARY_RED
+    quote_box.line.width = Pt(2)
+
+    quote = slide.shapes.add_textbox(Inches(1.2), Inches(y+0.2), Inches(7.6), Inches(1.4))
+    tf = quote.text_frame
+    tf.word_wrap = True
+    tf.text = '"Las diferencias en el aparato fonador entre niños y niñas antes de la pubertad son prácticamente inexistentes"\n\n— Fitch & Giedd (1999)'
+    tf.paragraphs[0].font.size = Pt(22)
+    tf.paragraphs[0].font.italic = True
+    tf.paragraphs[0].font.color.rgb = DARK_GRAY
+    y += 2
+
+    # Pregunta final
+    q = slide.shapes.add_textbox(Inches(0.5), Inches(y), Inches(9), Inches(0.8))
+    q.text_frame.text = "Entonces, ¿cómo lo hacemos?"
+    q.text_frame.paragraphs[0].font.size = Pt(32)
+    q.text_frame.paragraphs[0].font.bold = True
+    q.text_frame.paragraphs[0].font.color.rgb = PRIMARY_RED
+    q.text_frame.paragraphs[0].alignment = PP_ALIGN.CENTER
+
+def add_table_slide():
+    """Tabla de datos"""
+    slide = prs.slides.add_slide(prs.slide_layouts[6])
+    add_header(slide, "Los datos acústicos")
+
+    sub = slide.shapes.add_textbox(Inches(0.5), Inches(1.2), Inches(9), Inches(0.4))
+    sub.text_frame.text = "Parámetros de las grabaciones que escuchasteis"
+    sub.text_frame.paragraphs[0].font.size = Pt(24)
+    sub.text_frame.paragraphs[0].font.color.rgb = DARK_GRAY
+
+    # Tabla
+    table = slide.shapes.add_table(7, 7, Inches(0.2), Inches(1.8), Inches(9.6), Inches(4.5)).table
+
     headers = ["Grabación", "Palabras", "Vocales", "Tono (Hz)", "F1 (Hz)", "F2 (Hz)", "F3 (Hz)"]
     data = [
         ["Niña 1", "4", "28", "300±38", "678±206", "1603±682", "2918±494"],
@@ -181,333 +212,243 @@ def add_table_slide(prs, title):
         ["Niño 3", "5", "15", "302±44", "681±140", "1598±501", "2800±573"],
     ]
 
-    # Headers
     for col_idx, header in enumerate(headers):
         cell = table.cell(0, col_idx)
         cell.text = header
         cell.fill.solid()
-        cell.fill.fore_color.rgb = RGBColor(52, 152, 219)
-        p = cell.text_frame.paragraphs[0]
-        p.font.size = Pt(16)
-        p.font.bold = True
-        p.font.color.rgb = RGBColor(255, 255, 255)
-        p.alignment = PP_ALIGN.CENTER
+        cell.fill.fore_color.rgb = PRIMARY_RED
+        cell.text_frame.paragraphs[0].font.size = Pt(18)
+        cell.text_frame.paragraphs[0].font.bold = True
+        cell.text_frame.paragraphs[0].font.color.rgb = RGBColor(255, 255, 255)
+        cell.text_frame.paragraphs[0].alignment = PP_ALIGN.CENTER
 
-    # Datos
     for row_idx, row_data in enumerate(data):
         for col_idx, value in enumerate(row_data):
             cell = table.cell(row_idx + 1, col_idx)
             cell.text = value
-            p = cell.text_frame.paragraphs[0]
-            p.font.size = Pt(15)
-            p.alignment = PP_ALIGN.CENTER
-
+            cell.text_frame.paragraphs[0].font.size = Pt(16)
+            cell.text_frame.paragraphs[0].alignment = PP_ALIGN.CENTER
             if row_idx % 2 == 0:
                 cell.fill.solid()
-                cell.fill.fore_color.rgb = RGBColor(245, 245, 245)
+                cell.fill.fore_color.rgb = RGBColor(250, 250, 250)
 
-def add_image_slide(prs, title, subtitle, image_path, interpretation):
-    """Diapositiva con imagen"""
-    slide, y = add_slide_with_title(prs, title)
+    # Observación
+    obs = slide.shapes.add_textbox(Inches(0.5), Inches(6.5), Inches(9), Inches(0.8))
+    obs.text_frame.text = "Los rangos se solapan completamente"
+    obs.text_frame.paragraphs[0].font.size = Pt(24)
+    obs.text_frame.paragraphs[0].font.bold = True
+    obs.text_frame.paragraphs[0].font.color.rgb = PRIMARY_RED
+    obs.text_frame.paragraphs[0].alignment = PP_ALIGN.CENTER
 
-    sub_box = slide.shapes.add_textbox(Inches(0.5), Inches(y), Inches(9), Inches(0.5))
-    tf = sub_box.text_frame
-    tf.text = subtitle
-    tf.paragraphs[0].font.size = Pt(24)
-    tf.paragraphs[0].font.color.rgb = RGBColor(85, 85, 85)
-    y += 0.6
+def add_text_slide(title, subtitle, bullets, start_y=1.3):
+    """Diapositiva genérica con texto"""
+    slide = prs.slides.add_slide(prs.slide_layouts[6])
+    add_header(slide, title)
 
-    # Imagen
-    if os.path.exists(image_path):
-        slide.shapes.add_picture(image_path, Inches(2), Inches(y), height=Inches(4.2))
-        y += 4.4
+    y = start_y
 
-    # Interpretación
-    interp_box = slide.shapes.add_textbox(Inches(0.5), Inches(y), Inches(9), Inches(0.6))
-    tf = interp_box.text_frame
-    tf.text = f"Interpretación: {interpretation}"
-    p = tf.paragraphs[0]
-    p.font.size = Pt(18)
-    p.font.italic = True
-    p.font.color.rgb = RGBColor(127, 140, 141)
+    if subtitle:
+        sub = slide.shapes.add_textbox(Inches(0.5), Inches(y), Inches(9), Inches(0.6))
+        sub.text_frame.text = subtitle
+        sub.text_frame.paragraphs[0].font.size = Pt(26)
+        sub.text_frame.paragraphs[0].font.color.rgb = DARK_GRAY
+        sub.text_frame.paragraphs[0].font.bold = True
+        y += 0.8
 
-def add_conclusion_slide(prs, title, subtitle, points):
-    """Diapositiva de conclusión"""
-    slide, y = add_slide_with_title(prs, title)
-
-    sub_box = slide.shapes.add_textbox(Inches(0.5), Inches(y), Inches(9), Inches(0.6))
-    tf = sub_box.text_frame
-    tf.text = subtitle
-    p = tf.paragraphs[0]
-    p.font.size = Pt(26)
-    p.font.bold = True
-    p.font.color.rgb = RGBColor(41, 128, 185)
-    y += 0.8
-
-    for point in points:
-        point_box = slide.shapes.add_textbox(Inches(0.8), Inches(y), Inches(8.5), Inches(0.5))
-        tf = point_box.text_frame
-        tf.text = f"• {point}"
-        p = tf.paragraphs[0]
-        p.font.size = Pt(20)
+    for bullet in bullets:
+        b = slide.shapes.add_textbox(Inches(0.8), Inches(y), Inches(8.4), Inches(0.55))
+        b.text_frame.word_wrap = True
+        b.text_frame.text = f"• {bullet}"
+        b.text_frame.paragraphs[0].font.size = Pt(24)
         y += 0.6
 
-# Crear presentación
-prs = create_presentation()
+def add_image_slide(title, subtitle, img_path, interpretation):
+    """Diapositiva con imagen"""
+    slide = prs.slides.add_slide(prs.slide_layouts[6])
+    add_header(slide, title)
 
-# Diapositiva 1: Título
-add_title_slide(prs)
+    sub = slide.shapes.add_textbox(Inches(0.5), Inches(1.2), Inches(9), Inches(0.5))
+    sub.text_frame.text = subtitle
+    sub.text_frame.paragraphs[0].font.size = Pt(24)
+    sub.text_frame.paragraphs[0].font.color.rgb = DARK_GRAY
 
-# Diapositivas 2-4: Audios
-add_audio_slide(prs, 1, [(1, "audio_ninio_2.wav"), (2, "audio_ninia_1.wav")])
-add_audio_slide(prs, 2, [(3, "audio_ninio_3.wav"), (4, "audio_ninia3.wav")])
-add_audio_slide(prs, 3, [(5, "audio_ninio_1.wav"), (6, "audio_ninia_2.wav")])
+    if os.path.exists(img_path):
+        slide.shapes.add_picture(img_path, Inches(1.5), Inches(1.9), height=Inches(4.5))
 
-# Diapositiva 5: El enigma
-slide, y = add_slide_with_title(prs, "El enigma científico")
-text_box = slide.shapes.add_textbox(Inches(0.5), Inches(y), Inches(9), Inches(0.6))
-tf = text_box.text_frame
-tf.text = "Lo que dice la investigación"
-tf.paragraphs[0].font.size = Pt(26)
-tf.paragraphs[0].font.color.rgb = RGBColor(85, 85, 85)
-y += 0.7
+    interp = slide.shapes.add_textbox(Inches(0.5), Inches(6.6), Inches(9), Inches(0.7))
+    interp.text_frame.word_wrap = True
+    interp.text_frame.text = f"Interpretación: {interpretation}"
+    interp.text_frame.paragraphs[0].font.size = Pt(20)
+    interp.text_frame.paragraphs[0].font.italic = True
+    interp.text_frame.paragraphs[0].font.color.rgb = DARK_GRAY
 
-text_box2 = slide.shapes.add_textbox(Inches(0.8), Inches(y), Inches(8.5), Inches(0.8))
-tf = text_box2.text_frame
-tf.text = "Según Funk & Simpson (2023), identificamos el género de voces infantiles con una precisión del 70-84%, muy por encima del azar, pero:"
-tf.paragraphs[0].font.size = Pt(22)
-y += 1
+# Generar presentación
+add_title_slide()
+add_audio_slides()
+add_enigma_slide()
+add_table_slide()
 
-quote_box = slide.shapes.add_textbox(Inches(1.2), Inches(y), Inches(7.6), Inches(1.2))
-tf = quote_box.text_frame
-tf.text = '"Las diferencias en el aparato fonador entre niños y niñas antes de la pubertad son prácticamente inexistentes"\n\n— Fitch & Giedd (1999)'
-p = tf.paragraphs[0]
-p.font.size = Pt(20)
-p.font.italic = True
-p.font.color.rgb = RGBColor(52, 152, 219)
-rect = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(1), Inches(y-0.1), Inches(8), Inches(1.4))
-rect.fill.solid()
-rect.fill.fore_color.rgb = RGBColor(236, 240, 241)
-rect.line.color.rgb = RGBColor(52, 152, 219)
-slide.shapes._spTree.remove(rect._element)
-slide.shapes._spTree.insert(2, rect._element)
-y += 1.6
-
-question_box = slide.shapes.add_textbox(Inches(0.5), Inches(y), Inches(9), Inches(0.6))
-tf = question_box.text_frame
-tf.text = "Entonces, ¿cómo lo hacemos?"
-p = tf.paragraphs[0]
-p.font.size = Pt(28)
-p.font.bold = True
-p.font.color.rgb = RGBColor(192, 57, 43)
-p.alignment = PP_ALIGN.CENTER
-
-# Diapositiva 6: Tabla de datos
-add_table_slide(prs, "Los datos acústicos")
-
-# Diapositiva 7: Observación clave
-slide, y = add_slide_with_title(prs, "Los datos acústicos (II)")
-sub_box = slide.shapes.add_textbox(Inches(0.5), Inches(y), Inches(9), Inches(0.6))
-tf = sub_box.text_frame
-tf.text = "Observación clave"
-tf.paragraphs[0].font.size = Pt(28)
-tf.paragraphs[0].font.color.rgb = RGBColor(85, 85, 85)
-
-obs_box = slide.shapes.add_textbox(Inches(1), Inches(3), Inches(8), Inches(1.5))
-tf = obs_box.text_frame
-tf.text = "Los rangos se solapan completamente.\n\nNo hay diferencias estadísticamente significativas."
-for p in tf.paragraphs:
-    p.font.size = Pt(32)
-    p.font.bold = True
-    p.font.color.rgb = RGBColor(192, 57, 43)
-    p.alignment = PP_ALIGN.CENTER
-
-# Diapositiva 8: El tono
-add_text_slide(prs, "Entendiendo la acústica de la voz", "El tono (frecuencia fundamental, F₀)", [
-    "la \"altura\" de la voz (grave o aguda)",
+add_text_slide("Entendiendo la acústica de la voz", "El tono (frecuencia fundamental, F₀)", [
+    'la "altura" de la voz (grave o aguda)',
     "producido por la vibración de las cuerdas vocales",
     "en niños prepuberales: 200-350 Hz (similar en ambos géneros)",
     "para comparar: adultos varones ~120 Hz, mujeres adultas ~220 Hz"
 ])
 
-# Diapositiva 9: Formantes
-slide, y = add_slide_with_title(prs, "Entendiendo la acústica de la voz (II)")
-sub_box = slide.shapes.add_textbox(Inches(0.5), Inches(y), Inches(9), Inches(0.6))
-tf = sub_box.text_frame
-tf.text = "Los formantes (F1, F2, F3)"
-tf.paragraphs[0].font.size = Pt(26)
-tf.paragraphs[0].font.color.rgb = RGBColor(85, 85, 85)
-y += 0.7
+# Formantes
+slide = prs.slides.add_slide(prs.slide_layouts[6])
+add_header(slide, "Entendiendo la acústica de la voz (II)")
+sub = slide.shapes.add_textbox(Inches(0.5), Inches(1.3), Inches(9), Inches(0.5))
+sub.text_frame.text = "Los formantes (F1, F2, F3)"
+sub.text_frame.paragraphs[0].font.size = Pt(26)
+sub.text_frame.paragraphs[0].font.color.rgb = DARK_GRAY
+sub.text_frame.paragraphs[0].font.bold = True
 
-bullets = [
-    "frecuencias de resonancia del tracto vocal",
-    "determinan la calidad de las vocales (/a/, /e/, /i/, /o/, /u/)",
-    "relacionados con la longitud del tracto vocal"
-]
-for bullet in bullets:
-    b_box = slide.shapes.add_textbox(Inches(0.8), Inches(y), Inches(8.5), Inches(0.45))
-    tf = b_box.text_frame
-    tf.text = f"• {bullet}"
-    tf.paragraphs[0].font.size = Pt(22)
-    y += 0.5
+y = 2
+for txt in ["frecuencias de resonancia del tracto vocal",
+            "determinan la calidad de las vocales (/a/, /e/, /i/, /o/, /u/)",
+            "relacionados con la longitud del tracto vocal"]:
+    b = slide.shapes.add_textbox(Inches(0.8), Inches(y), Inches(8.4), Inches(0.5))
+    b.text_frame.text = f"• {txt}"
+    b.text_frame.paragraphs[0].font.size = Pt(24)
+    y += 0.6
 
-y += 0.3
-details = [
-    "F1: apertura de la boca (bajo = cerrada /i/, alto = abierta /a/)",
-    "F2: posición de la lengua (bajo = posterior /u/, alto = anterior /i/)",
-    "F3: configuración más compleja del tracto vocal"
-]
-for detail in details:
-    d_box = slide.shapes.add_textbox(Inches(0.8), Inches(y), Inches(8.5), Inches(0.45))
-    tf = d_box.text_frame
-    tf.text = detail
-    p = tf.paragraphs[0]
-    p.font.size = Pt(20)
-    p.font.bold = True
-    p.font.color.rgb = RGBColor(52, 152, 219)
-    y += 0.5
+y += 0.2
+for detail in ["F1: apertura de la boca (bajo = cerrada /i/, alto = abierta /a/)",
+               "F2: posición de la lengua (bajo = posterior /u/, alto = anterior /i/)",
+               "F3: configuración más compleja del tracto vocal"]:
+    d = slide.shapes.add_textbox(Inches(0.8), Inches(y), Inches(8.4), Inches(0.5))
+    d.text_frame.word_wrap = True
+    d.text_frame.text = detail
+    d.text_frame.paragraphs[0].font.size = Pt(22)
+    d.text_frame.paragraphs[0].font.bold = True
+    d.text_frame.paragraphs[0].font.color.rgb = PRIMARY_RED
+    y += 0.6
 
-# Diapositivas 10-11: Imágenes
-add_image_slide(prs, "Las visualizaciones acústicas", "Espacio vocálico F1-F2",
+add_image_slide("Las visualizaciones acústicas", "Espacio vocálico F1-F2",
                 "vowel_spaces_overlap_small.png",
                 "las elipses muestran la distribución de las vocales de cada hablante. El solapamiento es evidente.")
 
-add_image_slide(prs, "Las visualizaciones acústicas (II)", "Distribución del tono",
+add_image_slide("Las visualizaciones acústicas (II)", "Distribución del tono",
                 "gender_comparison_statistical_small.png",
                 "las barras de error muestran que los rangos de tono son muy similares entre niños y niñas.")
 
-# Diapositiva 12: Paradoja - Percepción
-slide, y = add_slide_with_title(prs, "La paradoja: ¿cómo diferenciamos entonces?")
-sub_box = slide.shapes.add_textbox(Inches(0.5), Inches(y), Inches(9), Inches(0.5))
-tf = sub_box.text_frame
-tf.text = "Lo que sabemos de la percepción"
-tf.paragraphs[0].font.size = Pt(26)
-tf.paragraphs[0].font.color.rgb = RGBColor(85, 85, 85)
-y += 0.6
+# Percepción
+slide = prs.slides.add_slide(prs.slide_layouts[6])
+add_header(slide, "La paradoja: ¿cómo diferenciamos entonces?")
+sub = slide.shapes.add_textbox(Inches(0.5), Inches(1.3), Inches(9), Inches(0.5))
+sub.text_frame.text = "Lo que sabemos de la percepción - Barreda & Assmann (2021)"
+sub.text_frame.paragraphs[0].font.size = Pt(24)
+sub.text_frame.paragraphs[0].font.color.rgb = DARK_GRAY
+sub.text_frame.paragraphs[0].font.bold = True
 
-# Barreda & Assmann
-ref_box = slide.shapes.add_textbox(Inches(0.8), Inches(y), Inches(8.5), Inches(0.4))
-tf = ref_box.text_frame
-tf.text = "Barreda & Assmann (2021)"
-p = tf.paragraphs[0]
-p.font.size = Pt(22)
-p.font.bold = True
-p.font.color.rgb = RGBColor(41, 128, 185)
-y += 0.5
+quote_box = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(0.8), Inches(2.1), Inches(8.4), Inches(1.6))
+quote_box.fill.solid()
+quote_box.fill.fore_color.rgb = LIGHT_GRAY
+quote_box.line.color.rgb = PRIMARY_RED
+quote_box.line.width = Pt(2)
 
-quote_box = slide.shapes.add_textbox(Inches(1), Inches(y), Inches(8), Inches(0.9))
-tf = quote_box.text_frame
+quote = slide.shapes.add_textbox(Inches(1.2), Inches(2.3), Inches(7.6), Inches(1.2))
+tf = quote.text_frame
+tf.word_wrap = True
 tf.text = '"La percepción del género y la edad del hablante están entrelazadas. Los oyentes usan información sobre la edad para informar sus juicios de género"'
-p = tf.paragraphs[0]
-p.font.size = Pt(19)
-p.font.italic = True
-p.font.color.rgb = RGBColor(52, 152, 219)
-y += 1
+tf.paragraphs[0].font.size = Pt(22)
+tf.paragraphs[0].font.italic = True
 
-impl_box = slide.shapes.add_textbox(Inches(0.8), Inches(y), Inches(8.5), Inches(0.5))
-tf = impl_box.text_frame
-tf.text = "Implicación: el contexto y las expectativas importan."
-p = tf.paragraphs[0]
-p.font.size = Pt(20)
-p.font.bold = True
+impl = slide.shapes.add_textbox(Inches(0.8), Inches(4.2), Inches(8.4), Inches(0.6))
+impl.text_frame.text = "Implicación: el contexto y las expectativas importan."
+impl.text_frame.paragraphs[0].font.size = Pt(26)
+impl.text_frame.paragraphs[0].font.bold = True
+impl.text_frame.paragraphs[0].font.color.rgb = PRIMARY_RED
 
-# Diapositiva 13: Funk & Simpson
-add_text_slide(prs, "Lo que sabemos de la percepción (II)", "Funk & Simpson (2023) - Identificaron varios factores clave:", [
+add_text_slide("Lo que sabemos de la percepción (II)", "Funk & Simpson (2023)", [
     "Pitch como predictor principal (aunque con mucho solapamiento)",
     "Espectro de sibilantes (/s/, /z/): los niños tienden a producirlas con energía más baja",
-    "Correlación con conformidad de género: los niños que expresan mayor conformidad con estereotipos de género muestran diferencias más marcadas"
-])
+    "Correlación con conformidad de género: los niños que expresan mayor conformidad muestran diferencias más marcadas"
+], 1.2)
 
-# Diapositivas 14-16: Factores
-add_text_slide(prs, "La respuesta: no es solo la anatomía", "Factor 1: diferencias comportamentales", [
+add_text_slide("La respuesta: no es solo la anatomía", "Factor 1: diferencias comportamentales", [
     "Desde los 2-3 años, los niños internalizan estereotipos de género",
-    "Pueden modificar voluntariamente su voz para sonar más \"masculinos\" o \"femeninos\"",
-    "Cartei et al. (2019): niños de 6-10 años pueden controlar la expresión de masculinidad/feminidad en su voz"
-])
+    'Pueden modificar voluntariamente su voz para sonar más "masculinos" o "femeninos"',
+    "Cartei et al. (2019): niños de 6-10 años pueden controlar la expresión de masculinidad/feminidad"
+], 1.2)
 
-add_text_slide(prs, "La respuesta: no es solo la anatomía (II)", "Factor 2: información prosódica", [
+add_text_slide("La respuesta: no es solo la anatomía (II)", "Factor 2: información prosódica", [
     "Patrones de entonación",
     "Ritmo del habla",
     "Variabilidad temporal y espectral",
     "Mucho más evidente en frases completas que en sílabas aisladas"
-])
+], 1.2)
 
-add_text_slide(prs, "La respuesta: no es solo la anatomía (III)", "Factor 3: información contextual", [
+add_text_slide("La respuesta: no es solo la anatomía (III)", "Factor 3: información contextual", [
     "Duración del estímulo (mejor en oraciones que en vocales aisladas)",
     "Conocimiento de la edad aproximada del hablante",
     "Expectativas culturales"
-])
+], 1.2)
 
-# Diapositivas 17-19: Conclusiones
-add_conclusion_slide(prs, "Conclusiones", "Las diferencias acústicas prepuberales son sutiles", [
+add_text_slide("Conclusiones", "Las diferencias acústicas prepuberales son sutiles", [
     "No hay dimorfismo sexual anatómico significativo antes de la pubertad",
     "Los parámetros acústicos básicos (tono, formantes) se solapan completamente"
-])
+], 1.2)
 
-add_conclusion_slide(prs, "Conclusiones (II)", "Pero la percepción es robusta", [
+add_text_slide("Conclusiones (II)", "Pero la percepción es robusta", [
     "Identificamos correctamente el género en ~70-80% de los casos",
     "La precisión mejora con más contexto (oraciones vs sílabas aisladas)"
-])
+], 1.2)
 
-add_conclusion_slide(prs, "Conclusiones (III)", "La voz como práctica social", [
+add_text_slide("Conclusiones (III)", "La voz como práctica social", [
     "Los niños aprenden y practican patrones de habla asociados a su género",
     "La voz no solo refleja anatomía, sino identidad de género",
-    "Implicaciones: desarrollo del lenguaje, identidad de género en la infancia, terapia de voz"
-])
+    "Implicaciones: desarrollo del lenguaje, identidad de género, terapia de voz"
+], 1.2)
 
-# Diapositiva 20: Reflexión final
-slide, y = add_slide_with_title(prs, "Reflexión final")
-question_box = slide.shapes.add_textbox(Inches(0.5), Inches(y), Inches(9), Inches(0.6))
-tf = question_box.text_frame
-tf.text = 'La pregunta no es solo "¿cómo diferenciamos?"'
-p = tf.paragraphs[0]
-p.font.size = Pt(28)
-p.font.bold = True
-p.alignment = PP_ALIGN.CENTER
-y += 0.8
+# Reflexión final
+slide = prs.slides.add_slide(prs.slide_layouts[6])
+add_header(slide, "Reflexión final")
 
-answer_box = slide.shapes.add_textbox(Inches(0.5), Inches(y), Inches(9), Inches(0.6))
-tf = answer_box.text_frame
-tf.text = "Es también: ¿Qué nos dice esto sobre cómo se construye el género?"
-p = tf.paragraphs[0]
-p.font.size = Pt(26)
-p.font.bold = True
-p.font.color.rgb = RGBColor(192, 57, 43)
-p.alignment = PP_ALIGN.CENTER
-y += 1
+q1 = slide.shapes.add_textbox(Inches(0.5), Inches(1.4), Inches(9), Inches(0.6))
+q1.text_frame.text = 'La pregunta no es solo "¿cómo diferenciamos?"'
+q1.text_frame.paragraphs[0].font.size = Pt(30)
+q1.text_frame.paragraphs[0].font.bold = True
+q1.text_frame.paragraphs[0].alignment = PP_ALIGN.CENTER
 
-concepts = [
-    "Es performativo: se practica y se expresa",
-    "Es perceptivo: lo interpretamos con expectativas culturales",
-    "Es dinámico: evoluciona con el desarrollo"
-]
-for concept in concepts:
-    c_box = slide.shapes.add_textbox(Inches(1), Inches(y), Inches(8), Inches(0.5))
-    tf = c_box.text_frame
-    tf.text = f"• {concept}"
-    p = tf.paragraphs[0]
-    p.font.size = Pt(24)
-    p.font.bold = True
-    y += 0.6
+q2 = slide.shapes.add_textbox(Inches(0.5), Inches(2.2), Inches(9), Inches(0.8))
+q2.text_frame.word_wrap = True
+q2.text_frame.text = "Es también: ¿Qué nos dice esto sobre cómo se construye el género?"
+q2.text_frame.paragraphs[0].font.size = Pt(28)
+q2.text_frame.paragraphs[0].font.bold = True
+q2.text_frame.paragraphs[0].font.color.rgb = PRIMARY_RED
+q2.text_frame.paragraphs[0].alignment = PP_ALIGN.CENTER
 
-# Diapositiva 21: Preguntas para debate
-slide, y = add_slide_with_title(prs, "Preguntas para el debate")
+y = 3.5
+for concept in ["Es performativo: se practica y se expresa",
+                "Es perceptivo: lo interpretamos con expectativas culturales",
+                "Es dinámico: evoluciona con el desarrollo"]:
+    c = slide.shapes.add_textbox(Inches(1), Inches(y), Inches(8), Inches(0.6))
+    c.text_frame.word_wrap = True
+    c.text_frame.text = f"• {concept}"
+    c.text_frame.paragraphs[0].font.size = Pt(26)
+    c.text_frame.paragraphs[0].font.bold = True
+    y += 0.8
+
+# Preguntas debate
+slide = prs.slides.add_slide(prs.slide_layouts[6])
+add_header(slide, "Preguntas para el debate")
+
 questions = [
-    "¿Creéis que los niños son conscientes de que modifican su voz para sonar más \"masculinos\" o \"femeninos\"?",
+    '¿Creéis que los niños son conscientes de que modifican su voz para sonar más "masculinos" o "femeninos"?',
     "Si las diferencias anatómicas son mínimas, ¿de dónde aprenden los niños estos patrones vocales?",
     "¿Qué implicaciones tiene esto para nuestra comprensión del género como constructo social vs biológico?",
     "¿Debería esto cambiar nuestra aproximación a la terapia de voz para niños transgénero?"
 ]
 
-for idx, question in enumerate(questions):
-    q_box = slide.shapes.add_textbox(Inches(0.5), Inches(y), Inches(9), Inches(0.7))
-    tf = q_box.text_frame
-    tf.text = f"{idx+1}. {question}"
-    p = tf.paragraphs[0]
-    p.font.size = Pt(20)
-    y += 0.8
+y = 1.5
+for idx, q in enumerate(questions):
+    qbox = slide.shapes.add_textbox(Inches(0.5), Inches(y), Inches(9), Inches(0.8))
+    qbox.text_frame.word_wrap = True
+    qbox.text_frame.text = f"{idx+1}. {q}"
+    qbox.text_frame.paragraphs[0].font.size = Pt(22)
+    y += 1.2
 
-# Guardar
 prs.save('presentacion.pptx')
-print(f"Presentación generada: presentacion.pptx")
-print(f"Total de diapositivas: {len(prs.slides)}")
+print(f"✓ Presentación generada: presentacion.pptx ({len(prs.slides)} diapositivas)")
