@@ -16,6 +16,10 @@ Escuchad estas voces y responded: **¿es un niño o una niña?**
   <source src="audio_ninia_1.wav" type="audio/wav">
 </audio>
 
+---
+
+## Actividad inicial (II)
+
 ### Audio 3
 <audio controls>
   <source src="audio_ninio_3.wav" type="audio/wav">
@@ -25,6 +29,10 @@ Escuchad estas voces y responded: **¿es un niño o una niña?**
 <audio controls>
   <source src="audio_ninia3.wav" type="audio/wav">
 </audio>
+
+---
+
+## Actividad inicial (III)
 
 ### Audio 5
 <audio controls>
@@ -36,7 +44,7 @@ Escuchad estas voces y responded: **¿es un niño o una niña?**
   <source src="audio_ninia_2.wav" type="audio/wav">
 </audio>
 
-**Pregunta:** ¿Habéis podido identificar el género de cada voz? ¿Con qué grado de certeza?
+**Pregunta:** ¿habéis podido identificar el género de cada voz? ¿Con qué grado de certeza?
 
 ---
 
@@ -58,7 +66,7 @@ Según Funk & Simpson (2023), identificamos el género de voces infantiles con u
 
 ### Parámetros de las grabaciones que escuchasteis
 
-| Grabación | Palabras | Vocales | Pitch (Hz) | F1 (Hz) | F2 (Hz) | F3 (Hz) |
+| Grabación | Palabras | Vocales | Tono (Hz) | F1 (Hz) | F2 (Hz) | F3 (Hz) |
 |-----------|----------|---------|------------|---------|---------|---------|
 | Niña 1 | 4 | 28 | **300±38** | 678±206 | 1603±682 | 2918±494 |
 | Niña 2 | 1 | 16 | **259±39** | 702±186 | 1376±339 | 2568±583 |
@@ -67,29 +75,34 @@ Según Funk & Simpson (2023), identificamos el género de voces infantiles con u
 | Niño 2 | 2 | 9 | **268±39** | 666±57 | 1750±292 | 2879±500 |
 | Niño 3 | 5 | 15 | **302±44** | 681±140 | 1598±501 | 2800±573 |
 
+---
+
+## Los datos acústicos (II)
+
 ### Observación clave
+
 Los rangos se **solapan completamente**. No hay diferencias estadísticamente significativas.
 
 ---
 
 ## Entendiendo la acústica de la voz
 
-### El Pitch (frecuencia fundamental, F₀)
+### El tono (frecuencia fundamental, F₀)
 
-- La "altura" de la voz (grave o aguda)
-- Producido por la vibración de las cuerdas vocales
-- En niños prepuberales: **200-350 Hz** (similar en ambos sexos)
-- Para comparar: adultos varones ~120 Hz, mujeres adultas ~220 Hz
+- la "altura" de la voz (grave o aguda)
+- producido por la vibración de las cuerdas vocales
+- en niños prepuberales: **200-350 Hz** (similar en ambos géneros)
+- para comparar: adultos varones ~120 Hz, mujeres adultas ~220 Hz
 
 ---
 
 ## Entendiendo la acústica de la voz (II)
 
-### Los Formantes (F1, F2, F3)
+### Los formantes (F1, F2, F3)
 
-- Frecuencias de resonancia del tracto vocal
-- Determinan la **calidad** de las vocales (/a/, /e/, /i/, /o/, /u/)
-- Relacionados con la **longitud del tracto vocal**
+- frecuencias de resonancia del tracto vocal
+- determinan la **calidad** de las vocales (/a/, /e/, /i/, /o/, /u/)
+- relacionados con la **longitud del tracto vocal**
 
 **F1:** apertura de la boca (bajo = cerrada /i/, alto = abierta /a/)
 **F2:** posición de la lengua (bajo = posterior /u/, alto = anterior /i/)
@@ -100,18 +113,18 @@ Los rangos se **solapan completamente**. No hay diferencias estadísticamente si
 ## Las visualizaciones acústicas
 
 ### Espacio vocálico F1-F2
-![Comparación de vocales](comparacion_vocales_rigurosa.png)
+![Comparación de vocales](./comparacion_vocales_rigurosa.png)
 
-**Interpretación:** Las elipses muestran la distribución de las vocales de cada hablante. El solapamiento es evidente.
+**Interpretación:** las elipses muestran la distribución de las vocales de cada hablante. El solapamiento es evidente.
 
 ---
 
 ## Las visualizaciones acústicas (II)
 
-### Distribución del pitch
-![Comparación de pitch](comparacion_pitch_rigurosa.png)
+### Distribución del tono
+![Comparación de tono](./comparacion_pitch_rigurosa.png)
 
-**Interpretación:** Las barras de error muestran que los rangos de pitch son muy similares entre niños y niñas.
+**Interpretación:** las barras de error muestran que los rangos de tono son muy similares entre niños y niñas.
 
 ---
 
