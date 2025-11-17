@@ -16,6 +16,10 @@ Escuchad estas voces y responded: **¿es un niño o una niña?**
   <source src="audio_ninia_1.wav" type="audio/wav">
 </audio>
 
+---
+
+## Actividad inicial (II)
+
 ### Audio 3
 <audio controls>
   <source src="audio_ninio_3.wav" type="audio/wav">
@@ -25,6 +29,10 @@ Escuchad estas voces y responded: **¿es un niño o una niña?**
 <audio controls>
   <source src="audio_ninia3.wav" type="audio/wav">
 </audio>
+
+---
+
+## Actividad inicial (III)
 
 ### Audio 5
 <audio controls>
@@ -36,7 +44,7 @@ Escuchad estas voces y responded: **¿es un niño o una niña?**
   <source src="audio_ninia_2.wav" type="audio/wav">
 </audio>
 
-**Pregunta:** ¿Habéis podido identificar el género de cada voz? ¿Con qué grado de certeza?
+**Pregunta:** ¿habéis podido identificar el género de cada voz? ¿Con qué grado de certeza?
 
 ---
 
@@ -58,7 +66,7 @@ Según Funk & Simpson (2023), identificamos el género de voces infantiles con u
 
 ### Parámetros de las grabaciones que escuchasteis
 
-| Grabación | Palabras | Vocales | Pitch (Hz) | F1 (Hz) | F2 (Hz) | F3 (Hz) |
+| Grabación | Palabras | Vocales | Tono (Hz) | F1 (Hz) | F2 (Hz) | F3 (Hz) |
 |-----------|----------|---------|------------|---------|---------|---------|
 | Niña 1 | 4 | 28 | **300±38** | 678±206 | 1603±682 | 2918±494 |
 | Niña 2 | 1 | 16 | **259±39** | 702±186 | 1376±339 | 2568±583 |
@@ -67,29 +75,34 @@ Según Funk & Simpson (2023), identificamos el género de voces infantiles con u
 | Niño 2 | 2 | 9 | **268±39** | 666±57 | 1750±292 | 2879±500 |
 | Niño 3 | 5 | 15 | **302±44** | 681±140 | 1598±501 | 2800±573 |
 
+---
+
+## Los datos acústicos (II)
+
 ### Observación clave
+
 Los rangos se **solapan completamente**. No hay diferencias estadísticamente significativas.
 
 ---
 
 ## Entendiendo la acústica de la voz
 
-### El Pitch (frecuencia fundamental, F₀)
+### El tono (frecuencia fundamental, F₀)
 
-- La "altura" de la voz (grave o aguda)
-- Producido por la vibración de las cuerdas vocales
-- En niños prepuberales: **200-350 Hz** (similar en ambos sexos)
-- Para comparar: adultos varones ~120 Hz, mujeres adultas ~220 Hz
+- la "altura" de la voz (grave o aguda)
+- producido por la vibración de las cuerdas vocales
+- en niños prepuberales: **200-350 Hz** (similar en ambos géneros)
+- para comparar: adultos varones ~120 Hz, mujeres adultas ~220 Hz
 
 ---
 
 ## Entendiendo la acústica de la voz (II)
 
-### Los Formantes (F1, F2, F3)
+### Los formantes (F1, F2, F3)
 
-- Frecuencias de resonancia del tracto vocal
-- Determinan la **calidad** de las vocales (/a/, /e/, /i/, /o/, /u/)
-- Relacionados con la **longitud del tracto vocal**
+- frecuencias de resonancia del tracto vocal
+- determinan la **calidad** de las vocales (/a/, /e/, /i/, /o/, /u/)
+- relacionados con la **longitud del tracto vocal**
 
 **F1:** apertura de la boca (bajo = cerrada /i/, alto = abierta /a/)
 **F2:** posición de la lengua (bajo = posterior /u/, alto = anterior /i/)
@@ -100,18 +113,18 @@ Los rangos se **solapan completamente**. No hay diferencias estadísticamente si
 ## Las visualizaciones acústicas
 
 ### Espacio vocálico F1-F2
-![Comparación de vocales](comparacion_vocales_rigurosa.png)
+![Comparación de vocales](./datos_para_presentacion/vowel_spaces_overlap.png)
 
-**Interpretación:** Las elipses muestran la distribución de las vocales de cada hablante. El solapamiento es evidente.
+**Interpretación:** las elipses muestran la distribución de las vocales de cada hablante. El solapamiento es evidente.
 
 ---
 
 ## Las visualizaciones acústicas (II)
 
-### Distribución del pitch
-![Comparación de pitch](comparacion_pitch_rigurosa.png)
+### Distribución del tono
+![Comparación de tono](./datos_para_presentacion/gender_comparison_statistical.png)
 
-**Interpretación:** Las barras de error muestran que los rangos de pitch son muy similares entre niños y niñas.
+**Interpretación:** las barras de error muestran que los rangos de tono son muy similares entre niños y niñas.
 
 ---
 
@@ -134,13 +147,13 @@ Identificaron varios factores clave:
 
 1. **Pitch como predictor principal** (aunque con mucho solapamiento)
 2. **Espectro de sibilantes** (/s/, /z/): los niños tienden a producirlas con energía más baja
-3. **Correlación con conformidad de género**: Los niños que expresan mayor conformidad con estereotipos de género muestran diferencias más marcadas
+3. **Correlación con conformidad de género**: los niños que expresan mayor conformidad con estereotipos de género muestran diferencias más marcadas
 
 ---
 
 ## La respuesta: no es solo la anatomía
 
-### Factor 1: Diferencias comportamentales
+### Factor 1: diferencias comportamentales
 
 - Desde los 2-3 años, los niños internalizan estereotipos de género
 - Pueden **modificar voluntariamente** su voz para sonar más "masculinos" o "femeninos"
@@ -150,7 +163,7 @@ Identificaron varios factores clave:
 
 ## La respuesta: no es solo la anatomía (II)
 
-### Factor 2: Información prosódica
+### Factor 2: información prosódica
 
 - Patrones de entonación
 - Ritmo del habla
@@ -161,7 +174,7 @@ Identificaron varios factores clave:
 
 ## La respuesta: no es solo la anatomía (III)
 
-### Factor 3: Información contextual
+### Factor 3: información contextual
 
 - Duración del estímulo (mejor en oraciones que en vocales aisladas)
 - Conocimiento de la edad aproximada del hablante
@@ -215,20 +228,15 @@ La voz infantil nos muestra que el género **no es solo biología**:
 
 ---
 
-## Referencias principales
+## Preguntas para el debate
 
-**Barreda, S., & Assmann, P. F. (2021).** Perception of gender in children's voices. *Journal of the Acoustical Society of America*, 150(5), 3949-3963.
-- Demuestra que la percepción de género y edad están entrelazadas
-- Los oyentes usan información de edad de forma dependiente del contexto
+1. ¿Creéis que los niños son conscientes de que modifican su voz para sonar más "masculinos" o "femeninos"?
 
-**Funk, R., & Simpson, A. P. (2023).** The acoustic and perceptual correlates of gender in children's voices. *Journal of Speech, Language, and Hearing Research*, 66, 3346-3363.
-- Pitch como predictor principal, pero no único
-- Correlación con conformidad de género autorreportada
-- Importancia de los espectros de sibilantes
+2. Si las diferencias anatómicas son mínimas, ¿de dónde aprenden los niños estos patrones vocales?
 
-**Cartei, V., et al. (2019).** Children can control the expression of masculinity and femininity through the voice. *Royal Society Open Science*, 6(7), 190656.
-- Los niños pueden modificar voluntariamente su voz
-- Evidencia directa de la naturaleza performativa del género en la voz
+3. ¿Qué implicaciones tiene esto para nuestra comprensión del género como constructo social vs biológico?
+
+4. ¿Debería esto cambiar nuestra aproximación a la terapia de voz para niños transgénero?
 
 <!--
 ---
