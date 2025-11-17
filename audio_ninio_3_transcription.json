@@ -1,0 +1,103 @@
+{
+  "text": "Voy por uno llamado La Máquina de Abrazos que siempre lo leo, es mi cuento favorito.",
+  "language": "es",
+  "words": [
+    {
+      "word": "Voy",
+      "start": 0.0,
+      "end": 0.12,
+      "duration": 0.12
+    },
+    {
+      "word": "por",
+      "start": 0.12,
+      "end": 0.36,
+      "duration": 0.24
+    },
+    {
+      "word": "uno",
+      "start": 0.36,
+      "end": 0.66,
+      "duration": 0.30000000000000004
+    },
+    {
+      "word": "llamado",
+      "start": 0.66,
+      "end": 1.32,
+      "duration": 0.66
+    },
+    {
+      "word": "La",
+      "start": 1.32,
+      "end": 1.84,
+      "duration": 0.52
+    },
+    {
+      "word": "Máquina",
+      "start": 1.84,
+      "end": 2.46,
+      "duration": 0.6199999999999999
+    },
+    {
+      "word": "de",
+      "start": 2.46,
+      "end": 2.54,
+      "duration": 0.08000000000000007
+    },
+    {
+      "word": "Abrazos",
+      "start": 2.54,
+      "end": 3.2,
+      "duration": 0.6600000000000001
+    },
+    {
+      "word": "que",
+      "start": 3.2,
+      "end": 3.48,
+      "duration": 0.2799999999999998
+    },
+    {
+      "word": "siempre",
+      "start": 3.48,
+      "end": 4.56,
+      "duration": 1.0799999999999996
+    },
+    {
+      "word": "lo",
+      "start": 4.56,
+      "end": 4.92,
+      "duration": 0.3600000000000003
+    },
+    {
+      "word": "leo,",
+      "start": 4.92,
+      "end": 5.32,
+      "duration": 0.40000000000000036
+    },
+    {
+      "word": "es",
+      "start": 5.32,
+      "end": 5.44,
+      "duration": 0.1200000000000001
+    },
+    {
+      "word": "mi",
+      "start": 5.44,
+      "end": 5.58,
+      "duration": 0.13999999999999968
+    },
+    {
+      "word": "cuento",
+      "start": 5.58,
+      "end": 5.94,
+      "duration": 0.3600000000000003
+    },
+    {
+      "word": "favorito.",
+      "start": 5.94,
+      "end": 6.8,
+      "duration": 0.8599999999999994
+    }
+  ],
+  "num_words": 16
+}
