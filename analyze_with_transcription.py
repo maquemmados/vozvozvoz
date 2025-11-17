@@ -161,8 +161,8 @@ class WordBasedVoiceAnalyzer:
             pitch_mean = 0
             pitch_values = []
 
-        # Detectar vocales dentro de la palabra
-        vowels = self._detect_vowels_in_word(word_snd, start_time)
+        # Detectar vocales dentro de la palabra (con transcripción para etiquetarlas)
+        vowels = self._detect_vowels_in_word(word_snd, start_time, word_info['word'])
 
         analysis = {
             'word': word_info['word'],
@@ -178,9 +178,30 @@ class WordBasedVoiceAnalyzer:
 
         return analysis
 
-    def _detect_vowels_in_word(self, word_snd, word_start_time):
-        """Detecta vocales dentro de una palabra."""
+    def _extract_vowels_from_text(self, word_text):
+        """Extrae las vocales de una palabra transcrita."""
+        # Vocales del español (minúsculas y mayúsculas, con/sin acentos)
+        vowel_chars = 'aeiouáéíóúAEIOUÁÉÍÓÚ'
+        vowel_map = {
+            'a': 'a', 'e': 'e', 'i': 'i', 'o': 'o', 'u': 'u',
+            'á': 'a', 'é': 'e', 'í': 'i', 'ó': 'o', 'ú': 'u',
+            'A': 'a', 'E': 'e', 'I': 'i', 'O': 'o', 'U': 'u',
+            'Á': 'a', 'É': 'e', 'Í': 'i', 'Ó': 'o', 'Ú': 'u'
+        }
+
         vowels = []
+        for char in word_text:
+            if char in vowel_chars:
+                vowels.append(vowel_map[char])
+
+        return vowels
+
+    def _detect_vowels_in_word(self, word_snd, word_start_time, word_text=None):
+        """Detecta vocales dentro de una palabra y las etiqueta usando la transcripción."""
+        vowels = []
+
+        # Extraer vocales esperadas del texto
+        expected_vowels = self._extract_vowels_from_text(word_text) if word_text else []
 
         try:
             duration = call(word_snd, "Get total duration")
@@ -244,6 +265,30 @@ class WordBasedVoiceAnalyzer:
                 if vowel:
                     vowels.append(vowel)
 
+            # Asignar etiquetas de vocales usando la transcripción
+            if expected_vowels and len(vowels) == len(expected_vowels):
+                # Coincidencia perfecta: asignar en orden
+                for i, vowel in enumerate(vowels):
+                    vowel['vowel_class'] = f'/{expected_vowels[i]}/'
+                    vowel['vowel_source'] = 'transcription'
+            elif expected_vowels:
+                # No coincide: reportar y usar heurística
+                print(f"      ⚠ '{word_text}': se esperaban {len(expected_vowels)} vocales {expected_vowels}, se detectaron {len(vowels)} segmentos")
+                # Intentar mapear lo mejor posible
+                if len(vowels) > 0:
+                    for i, vowel in enumerate(vowels):
+                        if i < len(expected_vowels):
+                            vowel['vowel_class'] = f'/{expected_vowels[i]}/'
+                            vowel['vowel_source'] = 'transcription_partial'
+                        else:
+                            vowel['vowel_class'] = '/unknown/'
+                            vowel['vowel_source'] = 'acoustic_only'
+            else:
+                # Sin transcripción: dejar sin etiquetar
+                for vowel in vowels:
+                    vowel['vowel_class'] = '/unknown/'
+                    vowel['vowel_source'] = 'acoustic_only'
+
         except Exception as e:
             pass
 
@@ -264,7 +309,7 @@ class WordBasedVoiceAnalyzer:
             # Validar
             if f1 and f2 and f3 and not np.isnan(f1) and not np.isnan(f2) and not np.isnan(f3):
                 if f1 > 0 and f2 > f1 and f3 > f2 and f1 < 1500 and f2 < 3500:
-                    # Pitch
+                    # F0
                     pitch = call(word_snd, "To Pitch", 0.0, 150, 500)
                     f0 = call(pitch, "Get value at time", mid_time, "Hertz", "Linear")
 
@@ -326,7 +371,7 @@ class WordBasedVoiceAnalyzer:
         print(f"  ✓ Palabras analizadas: {len(self.words_analysis)}")
         print(f"  ✓ Vocales detectadas: {len(self.vowels_analysis)}")
         if self.results.get('pitch_mean'):
-            print(f"  ✓ Pitch medio: {self.results['pitch_mean']:.1f} ± {self.results['pitch_std']:.1f} Hz")
+            print(f"  ✓ F0 medio: {self.results['pitch_mean']:.1f} ± {self.results['pitch_std']:.1f} Hz")
         if self.results.get('f1_mean'):
             print(f"  ✓ F1: {self.results['f1_mean']:.0f} ± {self.results['f1_std']:.0f} Hz")
             print(f"  ✓ F2: {self.results['f2_mean']:.0f} ± {self.results['f2_std']:.0f} Hz")
@@ -340,13 +385,26 @@ class WordBasedVoiceAnalyzer:
         Args:
             output_dir: Directorio donde guardar los audios
         """
+        import re
+
         output_path = Path(output_dir)
         output_path.mkdir(exist_ok=True)
 
         print(f"\n  Exportando audios de palabras a: {output_dir}/")
 
         for i, word_analysis in enumerate(self.words_analysis):
-            word_text = word_analysis['word'].replace('/', '_').replace(' ', '_')
+            # Sanitizar nombre de archivo (quitar caracteres no válidos en Windows/Linux)
+            word_text = word_analysis['word']
+            # Eliminar caracteres no válidos: < > : " / \ | ? *
+            word_text = re.sub(r'[<>:"/\\|?*]', '', word_text)
+            # Reemplazar espacios con guiones bajos
+            word_text = word_text.replace(' ', '_')
+            # Limitar longitud
+            word_text = word_text[:30] if len(word_text) > 30 else word_text
+            # Si queda vacío, usar índice
+            if not word_text:
+                word_text = f"palabra{i}"
+
             filename = f"{self.name}_palabra_{i:02d}_{word_text}.wav"
             filepath = output_path / filename
 
@@ -358,21 +416,45 @@ class WordBasedVoiceAnalyzer:
 
 def classify_vowels(all_vowels):
     """
-    Clasifica vocales automáticamente usando k-means en el espacio F1-F2.
+    Reporta estadísticas de vocales identificadas por transcripción y valida con k-means.
 
     Args:
-        all_vowels: Lista de diccionarios con vocales (debe contener 'f1' y 'f2')
+        all_vowels: Lista de diccionarios con vocales (ya contienen 'vowel_class' de transcripción)
 
     Returns:
-        Lista de vocales con campo 'vowel_class' añadido (0-4 para /a/, /e/, /i/, /o/, /u/)
+        Lista de vocales con validación de k-means añadida
     """
     if len(all_vowels) < 5:
-        print("⚠ No hay suficientes vocales para clasificación")
+        print("⚠ No hay suficientes vocales para análisis")
         return all_vowels
 
     print("\n" + "="*70)
-    print("CLASIFICACIÓN AUTOMÁTICA DE VOCALES")
+    print("IDENTIFICACIÓN DE VOCALES (Transcripción + Validación K-means)")
     print("="*70)
+
+    # Contar vocales identificadas por transcripción
+    from_transcription = [v for v in all_vowels if v.get('vowel_source') == 'transcription']
+    from_partial = [v for v in all_vowels if v.get('vowel_source') == 'transcription_partial']
+    from_acoustic = [v for v in all_vowels if v.get('vowel_source') == 'acoustic_only']
+
+    print(f"\n📝 Identificación basada en transcripción Whisper:")
+    print(f"  ✓ Perfecta coincidencia: {len(from_transcription)} vocales")
+    print(f"  ⚠ Coincidencia parcial: {len(from_partial)} vocales")
+    print(f"  ? Solo acústica: {len(from_acoustic)} vocales")
+
+    # Contar por tipo de vocal (de transcripción)
+    vowel_counts = {}
+    for vowel in all_vowels:
+        vclass = vowel.get('vowel_class', '/unknown/')
+        vowel_counts[vclass] = vowel_counts.get(vclass, 0) + 1
+
+    print(f"\n✓ Distribución de vocales (por transcripción):")
+    for vclass in sorted(vowel_counts.keys()):
+        count = vowel_counts[vclass]
+        print(f"  {vclass}: {count} vocales")
+
+    # Validación con K-means (solo informativa)
+    print(f"\n🔬 Validación con clustering K-means (comparación):")
 
     # Extraer F1 y F2
     f1_values = np.array([v['f1'] for v in all_vowels]).reshape(-1, 1)
@@ -393,44 +475,91 @@ def classify_vowels(all_vowels):
     centroids = scaler.inverse_transform(centroids_scaled)
 
     # Mapear clusters a vocales basándose en F1 y F2
-    # /i/: F1 bajo, F2 alto
-    # /u/: F1 bajo, F2 bajo
-    # /a/: F1 alto, F2 medio
-    # /e/: F1 medio, F2 alto
-    # /o/: F1 medio, F2 bajo
+    # Valores prototípicos para niños españoles (aproximados):
+    # /i/: F1~400, F2~2500 (alta, anterior)
+    # /e/: F1~550, F2~2000 (media, anterior)
+    # /a/: F1~850, F2~1400 (baja, central)
+    # /o/: F1~600, F2~1000 (media, posterior)
+    # /u/: F1~400, F2~900 (alta, posterior)
 
+    prototypes = {
+        '/i/': np.array([400, 2500]),
+        '/e/': np.array([550, 2000]),
+        '/a/': np.array([850, 1400]),
+        '/o/': np.array([600, 1000]),
+        '/u/': np.array([400, 900])
+    }
+
+    # Asignar cada cluster a la vocal más cercana (sin repeticiones)
     cluster_to_vowel = {}
+    used_vowels = set()
+
+    # Calcular distancias de cada cluster a cada prototipo
+    distances = {}
     for cluster_id in range(5):
-        f1_cent = centroids[cluster_id, 0]
-        f2_cent = centroids[cluster_id, 1]
+        cluster_formants = centroids[cluster_id]
+        distances[cluster_id] = {}
+        for vowel, prototype in prototypes.items():
+            # Distancia euclidiana normalizada
+            dist = np.sqrt(((cluster_formants[0] - prototype[0]) / 500)**2 +
+                          ((cluster_formants[1] - prototype[1]) / 1000)**2)
+            distances[cluster_id][vowel] = dist
 
-        # Heurística simple para asignar vocal
-        if f1_cent < 450:  # F1 bajo
-            if f2_cent > 1800:
-                cluster_to_vowel[cluster_id] = '/i/'
-            else:
-                cluster_to_vowel[cluster_id] = '/u/'
-        elif f1_cent > 650:  # F1 alto
-            cluster_to_vowel[cluster_id] = '/a/'
-        else:  # F1 medio
-            if f2_cent > 1600:
-                cluster_to_vowel[cluster_id] = '/e/'
-            else:
-                cluster_to_vowel[cluster_id] = '/o/'
+    # Asignar clusters a vocales (greedy: asignar primero los más seguros)
+    for _ in range(5):
+        # Encontrar la mejor asignación (cluster, vocal) que minimice distancia
+        best_cluster = None
+        best_vowel = None
+        best_dist = float('inf')
 
-    # Añadir clasificación a cada vocal
+        for cluster_id in range(5):
+            if cluster_id in cluster_to_vowel:
+                continue
+            for vowel in prototypes.keys():
+                if vowel in used_vowels:
+                    continue
+                if distances[cluster_id][vowel] < best_dist:
+                    best_dist = distances[cluster_id][vowel]
+                    best_cluster = cluster_id
+                    best_vowel = vowel
+
+        if best_cluster is not None:
+            cluster_to_vowel[best_cluster] = best_vowel
+            used_vowels.add(best_vowel)
+
+    # Añadir clustering como validación (NO sobrescribe vowel_class de transcripción)
     for i, vowel in enumerate(all_vowels):
         vowel['cluster'] = int(labels[i])
-        vowel['vowel_class'] = cluster_to_vowel[labels[i]]
+        vowel['kmeans_vowel'] = cluster_to_vowel[labels[i]]  # K-means sugiere esta vocal
 
-    # Mostrar resultados
-    print(f"\n✓ Clasificadas {len(all_vowels)} vocales en 5 categorías:")
+    # Mostrar clusters detectados por k-means
+    print(f"  Clusters K-means encontrados:")
     for cluster_id in range(5):
         count = np.sum(labels == cluster_id)
         vowel_name = cluster_to_vowel[cluster_id]
         f1_mean = centroids[cluster_id, 0]
         f2_mean = centroids[cluster_id, 1]
-        print(f"  {vowel_name}: {count} vocales (F1={f1_mean:.0f} Hz, F2={f2_mean:.0f} Hz)")
+        print(f"    Cluster {cluster_id} → {vowel_name}: {count} vocales (F1={f1_mean:.0f}, F2={f2_mean:.0f})")
+
+    # Comparar transcripción vs k-means
+    agreements = 0
+    disagreements = 0
+    for vowel in all_vowels:
+        if vowel.get('vowel_source') == 'transcription':
+            if vowel['vowel_class'] == vowel['kmeans_vowel']:
+                agreements += 1
+            else:
+                disagreements += 1
+
+    if agreements + disagreements > 0:
+        accuracy = agreements / (agreements + disagreements) * 100
+        print(f"\n  Coincidencia Transcripción vs K-means: {agreements}/{agreements+disagreements} ({accuracy:.1f}%)")
+        if accuracy < 70:
+            print(f"  ⚠ Baja coincidencia - K-means puede no ser fiable para estos datos")
+        elif accuracy > 85:
+            print(f"  ✓ Alta coincidencia - ambos métodos concuerdan")
+
+    print(f"\n💡 Usando etiquetas de TRANSCRIPCIÓN como fuente principal")
 
     return all_vowels
 
@@ -474,12 +603,12 @@ def analyze_by_vowel_type(girls_vowels, boys_vowels):
         if len(girls_pitch) >= 2 and len(boys_pitch) >= 2:
             t_stat, p_val = stats.ttest_ind(girls_pitch, boys_pitch)
             results_by_vowel[vowel_type]['pitch'] = {
-                'girls_mean': np.mean(girls_pitch),
-                'boys_mean': np.mean(boys_pitch),
-                'p_value': p_val,
-                'significant': p_val < 0.05
+                'girls_mean': float(np.mean(girls_pitch)),
+                'boys_mean': float(np.mean(boys_pitch)),
+                'p_value': float(p_val),
+                'significant': bool(p_val < 0.05)
             }
-            print(f"  Pitch: niñas={np.mean(girls_pitch):.1f} Hz, niños={np.mean(boys_pitch):.1f} Hz, p={p_val:.4f} {'*' if p_val<0.05 else 'n.s.'}")
+            print(f"  F0: niñas={np.mean(girls_pitch):.1f} Hz, niños={np.mean(boys_pitch):.1f} Hz, p={p_val:.4f} {'*' if p_val<0.05 else 'n.s.'}")
 
         # Comparar F1
         girls_f1 = [v['f1'] for v in girls_v]
@@ -488,10 +617,10 @@ def analyze_by_vowel_type(girls_vowels, boys_vowels):
         if len(girls_f1) >= 2 and len(boys_f1) >= 2:
             t_stat, p_val = stats.ttest_ind(girls_f1, boys_f1)
             results_by_vowel[vowel_type]['f1'] = {
-                'girls_mean': np.mean(girls_f1),
-                'boys_mean': np.mean(boys_f1),
-                'p_value': p_val,
-                'significant': p_val < 0.05
+                'girls_mean': float(np.mean(girls_f1)),
+                'boys_mean': float(np.mean(boys_f1)),
+                'p_value': float(p_val),
+                'significant': bool(p_val < 0.05)
             }
             print(f"  F1: niñas={np.mean(girls_f1):.0f} Hz, niños={np.mean(boys_f1):.0f} Hz, p={p_val:.4f} {'*' if p_val<0.05 else 'n.s.'}")
 
@@ -502,10 +631,10 @@ def analyze_by_vowel_type(girls_vowels, boys_vowels):
         if len(girls_f2) >= 2 and len(boys_f2) >= 2:
             t_stat, p_val = stats.ttest_ind(girls_f2, boys_f2)
             results_by_vowel[vowel_type]['f2'] = {
-                'girls_mean': np.mean(girls_f2),
-                'boys_mean': np.mean(boys_f2),
-                'p_value': p_val,
-                'significant': p_val < 0.05
+                'girls_mean': float(np.mean(girls_f2)),
+                'boys_mean': float(np.mean(boys_f2)),
+                'p_value': float(p_val),
+                'significant': bool(p_val < 0.05)
             }
             print(f"  F2: niñas={np.mean(girls_f2):.0f} Hz, niños={np.mean(boys_f2):.0f} Hz, p={p_val:.4f} {'*' if p_val<0.05 else 'n.s.'}")
 
@@ -561,23 +690,23 @@ def compare_genders(analyzers):
     print("PRUEBAS ESTADÍSTICAS (t-test de Student)")
     print("-"*70)
 
-    # Pitch
+    # F0
     if girls_pitch and boys_pitch:
         t_stat, p_value = stats.ttest_ind(girls_pitch, boys_pitch)
         cohen_d = (np.mean(girls_pitch) - np.mean(boys_pitch)) / np.sqrt((np.std(girls_pitch)**2 + np.std(boys_pitch)**2) / 2)
 
         results['pitch'] = {
-            'girls_mean': np.mean(girls_pitch),
-            'girls_std': np.std(girls_pitch),
-            'boys_mean': np.mean(boys_pitch),
-            'boys_std': np.std(boys_pitch),
-            't_statistic': t_stat,
-            'p_value': p_value,
-            'cohen_d': cohen_d,
-            'significant': p_value < 0.05
+            'girls_mean': float(np.mean(girls_pitch)),
+            'girls_std': float(np.std(girls_pitch)),
+            'boys_mean': float(np.mean(boys_pitch)),
+            'boys_std': float(np.std(boys_pitch)),
+            't_statistic': float(t_stat),
+            'p_value': float(p_value),
+            'cohen_d': float(cohen_d),
+            'significant': bool(p_value < 0.05)
         }
 
-        print(f"\nPITCH:")
+        print(f"\nF0 (Frecuencia fundamental):")
         print(f"  Niñas: {np.mean(girls_pitch):.1f} ± {np.std(girls_pitch):.1f} Hz (n={len(girls_pitch)})")
         print(f"  Niños: {np.mean(boys_pitch):.1f} ± {np.std(boys_pitch):.1f} Hz (n={len(boys_pitch)})")
         print(f"  Diferencia: {abs(np.mean(girls_pitch) - np.mean(boys_pitch)):.1f} Hz")
@@ -591,14 +720,14 @@ def compare_genders(analyzers):
         cohen_d = (np.mean(girls_f1) - np.mean(boys_f1)) / np.sqrt((np.std(girls_f1)**2 + np.std(boys_f1)**2) / 2)
 
         results['f1'] = {
-            'girls_mean': np.mean(girls_f1),
-            'girls_std': np.std(girls_f1),
-            'boys_mean': np.mean(boys_f1),
-            'boys_std': np.std(boys_f1),
-            't_statistic': t_stat,
-            'p_value': p_value,
-            'cohen_d': cohen_d,
-            'significant': p_value < 0.05
+            'girls_mean': float(np.mean(girls_f1)),
+            'girls_std': float(np.std(girls_f1)),
+            'boys_mean': float(np.mean(boys_f1)),
+            'boys_std': float(np.std(boys_f1)),
+            't_statistic': float(t_stat),
+            'p_value': float(p_value),
+            'cohen_d': float(cohen_d),
+            'significant': bool(p_value < 0.05)
         }
 
         print(f"\nF1 (Primera Formante):")
@@ -615,14 +744,14 @@ def compare_genders(analyzers):
         cohen_d = (np.mean(girls_f2) - np.mean(boys_f2)) / np.sqrt((np.std(girls_f2)**2 + np.std(boys_f2)**2) / 2)
 
         results['f2'] = {
-            'girls_mean': np.mean(girls_f2),
-            'girls_std': np.std(girls_f2),
-            'boys_mean': np.mean(boys_f2),
-            'boys_std': np.std(boys_f2),
-            't_statistic': t_stat,
-            'p_value': p_value,
-            'cohen_d': cohen_d,
-            'significant': p_value < 0.05
+            'girls_mean': float(np.mean(girls_f2)),
+            'girls_std': float(np.std(girls_f2)),
+            'boys_mean': float(np.mean(boys_f2)),
+            'boys_std': float(np.std(boys_f2)),
+            't_statistic': float(t_stat),
+            'p_value': float(p_value),
+            'cohen_d': float(cohen_d),
+            'significant': bool(p_value < 0.05)
         }
 
         print(f"\nF2 (Segunda Formante):")
@@ -640,7 +769,7 @@ def compare_genders(analyzers):
     Los papers sobre percepción de género en voces infantiles muestran que:
 
     1. Las diferencias ACÚSTICAS son PEQUEÑAS o INEXISTENTES
-       - Pitch: solapamiento considerable entre niños y niñas
+       - F0: solapamiento considerable entre niños y niñas
        - Formantes: diferencias mínimas antes de la pubertad
 
     2. Las diferencias PERCEPTUALES son GRANDES
@@ -650,14 +779,14 @@ def compare_genders(analyzers):
     3. HIPÓTESIS:
        - La percepción se basa en sutiles diferencias espectrales
        - O en pistas socio-fonéticas aprendidas
-       - No solo en pitch y formantes básicos
+       - No solo en F0 y formantes básicos
     """)
 
     if results.get('pitch'):
         if not results['pitch']['significant']:
-            print("    ✓ Nuestros datos CONFIRMAN: no hay diferencia significativa en pitch")
+            print("    ✓ Nuestros datos CONFIRMAN: no hay diferencia significativa en F0")
         else:
-            print(f"    ⚠ Nuestros datos muestran diferencia en pitch (p={results['pitch']['p_value']:.4f})")
+            print(f"    ⚠ Nuestros datos muestran diferencia en F0 (p={results['pitch']['p_value']:.4f})")
 
     if results.get('f1') and results.get('f2'):
         sig_count = sum([results['f1']['significant'], results['f2']['significant']])
@@ -687,9 +816,9 @@ def create_comparison_visualizations(analyzers, stats_results, girls_vowels, boy
     axes[0, 0].hist(boys_pitch, bins=30, alpha=0.6, color='#1E90FF', label='Niños', density=True)
     axes[0, 0].axvline(np.mean(girls_pitch), color='#FF1493', linestyle='--', linewidth=2)
     axes[0, 0].axvline(np.mean(boys_pitch), color='#1E90FF', linestyle='--', linewidth=2)
-    axes[0, 0].set_xlabel('Pitch (Hz)', fontweight='bold')
+    axes[0, 0].set_xlabel('F0 (Hz)', fontweight='bold')
     axes[0, 0].set_ylabel('Densidad', fontweight='bold')
-    axes[0, 0].set_title('Distribución de Pitch por Género', fontweight='bold')
+    axes[0, 0].set_title('Distribución de F0 por género', fontweight='bold')
     axes[0, 0].legend()
     axes[0, 0].grid(True, alpha=0.3)
 
@@ -698,8 +827,8 @@ def create_comparison_visualizations(analyzers, stats_results, girls_vowels, boy
     bp = axes[0, 1].boxplot(data_pitch, labels=['Niñas', 'Niños'], patch_artist=True)
     bp['boxes'][0].set_facecolor('#FF1493')
     bp['boxes'][1].set_facecolor('#1E90FF')
-    axes[0, 1].set_ylabel('Pitch (Hz)', fontweight='bold')
-    axes[0, 1].set_title('Comparación de Pitch', fontweight='bold')
+    axes[0, 1].set_ylabel('F0 (Hz)', fontweight='bold')
+    axes[0, 1].set_title('Comparación de F0', fontweight='bold')
     axes[0, 1].grid(True, alpha=0.3, axis='y')
 
     # Añadir significancia
@@ -780,6 +909,216 @@ def create_comparison_visualizations(analyzers, stats_results, girls_vowels, boy
     plt.close()
 
 
+def visualize_by_vowel_type(vowel_type_results, girls_vowels, boys_vowels):
+    """
+    Visualización #1: Análisis por tipo de vocal.
+
+    Crea boxplots de F0, F1 y F2 para cada vocal (/a/, /e/, /i/, /o/, /u/)
+    comparando niños vs niñas.
+    """
+    print("\n  Generando: Análisis por tipo de vocal...")
+
+    vowel_types = ['/a/', '/e/', '/i/', '/o/', '/u/']
+
+    # Preparar datos por vocal
+    data_by_vowel = {}
+    for vowel_type in vowel_types:
+        girls_v = [v for v in girls_vowels if v.get('vowel_class') == vowel_type]
+        boys_v = [v for v in boys_vowels if v.get('vowel_class') == vowel_type]
+
+        if len(girls_v) >= 2 and len(boys_v) >= 2:
+            data_by_vowel[vowel_type] = {
+                'girls_f0': [v['pitch'] for v in girls_v if v['pitch'] > 0],
+                'boys_f0': [v['pitch'] for v in boys_v if v['pitch'] > 0],
+                'girls_f1': [v['f1'] for v in girls_v],
+                'boys_f1': [v['f1'] for v in boys_v],
+                'girls_f2': [v['f2'] for v in girls_v],
+                'boys_f2': [v['f2'] for v in boys_v]
+            }
+
+    if not data_by_vowel:
+        print("  ⚠ No hay suficientes datos para visualización por vocal")
+        return
+
+    # Crear figura con 3 filas (F0, F1, F2)
+    fig, axes = plt.subplots(3, 1, figsize=(14, 12))
+
+    vowels_available = list(data_by_vowel.keys())
+    x_positions = np.arange(len(vowels_available))
+    width = 0.35
+
+    # F0 por vocal
+    girls_f0_means = []
+    boys_f0_means = []
+    girls_f0_stds = []
+    boys_f0_stds = []
+
+    for vowel in vowels_available:
+        girls_f0_means.append(np.mean(data_by_vowel[vowel]['girls_f0']))
+        boys_f0_means.append(np.mean(data_by_vowel[vowel]['boys_f0']))
+        girls_f0_stds.append(np.std(data_by_vowel[vowel]['girls_f0']))
+        boys_f0_stds.append(np.std(data_by_vowel[vowel]['boys_f0']))
+
+    axes[0].bar(x_positions - width/2, girls_f0_means, width, yerr=girls_f0_stds,
+                label='Niñas', color='#FF1493', alpha=0.7, capsize=5)
+    axes[0].bar(x_positions + width/2, boys_f0_means, width, yerr=boys_f0_stds,
+                label='Niños', color='#1E90FF', alpha=0.7, capsize=5)
+    axes[0].set_ylabel('F0 (Hz)', fontweight='bold')
+    axes[0].set_title('F0 por tipo de vocal', fontweight='bold')
+    axes[0].set_xticks(x_positions)
+    axes[0].set_xticklabels(vowels_available)
+    axes[0].legend()
+    axes[0].grid(True, alpha=0.3, axis='y')
+
+    # Añadir significancia
+    for i, vowel in enumerate(vowels_available):
+        if vowel in vowel_type_results and 'pitch' in vowel_type_results[vowel]:
+            p_val = vowel_type_results[vowel]['pitch']['p_value']
+            if p_val < 0.05:
+                sig_mark = '***' if p_val < 0.001 else '**' if p_val < 0.01 else '*'
+                y_pos = max(girls_f0_means[i] + girls_f0_stds[i], boys_f0_means[i] + boys_f0_stds[i]) * 1.05
+                axes[0].text(i, y_pos, sig_mark, ha='center', fontsize=14, fontweight='bold')
+
+    # F1 por vocal
+    girls_f1_means = []
+    boys_f1_means = []
+    girls_f1_stds = []
+    boys_f1_stds = []
+
+    for vowel in vowels_available:
+        girls_f1_means.append(np.mean(data_by_vowel[vowel]['girls_f1']))
+        boys_f1_means.append(np.mean(data_by_vowel[vowel]['boys_f1']))
+        girls_f1_stds.append(np.std(data_by_vowel[vowel]['girls_f1']))
+        boys_f1_stds.append(np.std(data_by_vowel[vowel]['boys_f1']))
+
+    axes[1].bar(x_positions - width/2, girls_f1_means, width, yerr=girls_f1_stds,
+                label='Niñas', color='#FF1493', alpha=0.7, capsize=5)
+    axes[1].bar(x_positions + width/2, boys_f1_means, width, yerr=boys_f1_stds,
+                label='Niños', color='#1E90FF', alpha=0.7, capsize=5)
+    axes[1].set_ylabel('F1 (Hz)', fontweight='bold')
+    axes[1].set_title('F1 (Primera Formante) por tipo de vocal', fontweight='bold')
+    axes[1].set_xticks(x_positions)
+    axes[1].set_xticklabels(vowels_available)
+    axes[1].legend()
+    axes[1].grid(True, alpha=0.3, axis='y')
+
+    # Añadir significancia
+    for i, vowel in enumerate(vowels_available):
+        if vowel in vowel_type_results and 'f1' in vowel_type_results[vowel]:
+            p_val = vowel_type_results[vowel]['f1']['p_value']
+            if p_val < 0.05:
+                sig_mark = '***' if p_val < 0.001 else '**' if p_val < 0.01 else '*'
+                y_pos = max(girls_f1_means[i] + girls_f1_stds[i], boys_f1_means[i] + boys_f1_stds[i]) * 1.05
+                axes[1].text(i, y_pos, sig_mark, ha='center', fontsize=14, fontweight='bold')
+
+    # F2 por vocal
+    girls_f2_means = []
+    boys_f2_means = []
+    girls_f2_stds = []
+    boys_f2_stds = []
+
+    for vowel in vowels_available:
+        girls_f2_means.append(np.mean(data_by_vowel[vowel]['girls_f2']))
+        boys_f2_means.append(np.mean(data_by_vowel[vowel]['boys_f2']))
+        girls_f2_stds.append(np.std(data_by_vowel[vowel]['girls_f2']))
+        boys_f2_stds.append(np.std(data_by_vowel[vowel]['boys_f2']))
+
+    axes[2].bar(x_positions - width/2, girls_f2_means, width, yerr=girls_f2_stds,
+                label='Niñas', color='#FF1493', alpha=0.7, capsize=5)
+    axes[2].bar(x_positions + width/2, boys_f2_means, width, yerr=boys_f2_stds,
+                label='Niños', color='#1E90FF', alpha=0.7, capsize=5)
+    axes[2].set_ylabel('F2 (Hz)', fontweight='bold')
+    axes[2].set_title('F2 (Segunda Formante) por tipo de vocal', fontweight='bold')
+    axes[2].set_xticks(x_positions)
+    axes[2].set_xticklabels(vowels_available)
+    axes[2].legend()
+    axes[2].grid(True, alpha=0.3, axis='y')
+
+    # Añadir significancia
+    for i, vowel in enumerate(vowels_available):
+        if vowel in vowel_type_results and 'f2' in vowel_type_results[vowel]:
+            p_val = vowel_type_results[vowel]['f2']['p_value']
+            if p_val < 0.05:
+                sig_mark = '***' if p_val < 0.001 else '**' if p_val < 0.01 else '*'
+                y_pos = max(girls_f2_means[i] + girls_f2_stds[i], boys_f2_means[i] + boys_f2_stds[i]) * 1.05
+                axes[2].text(i, y_pos, sig_mark, ha='center', fontsize=14, fontweight='bold')
+
+    plt.suptitle('Comparación por Tipo de Vocal: Niños vs Niñas\n(* p<0.05, ** p<0.01, *** p<0.001)',
+                 fontsize=13, fontweight='bold')
+    plt.tight_layout()
+    plt.savefig('gender_by_vowel_comparison.png', dpi=150, bbox_inches='tight')
+    print("  ✓ gender_by_vowel_comparison.png")
+    plt.close()
+
+
+def visualize_f0_contours(analyzers):
+    """
+    Visualización #3: Evolución temporal de F0 (contornos de entonación).
+
+    Muestra cómo cambia F0 a lo largo del tiempo para cada grabación,
+    revelando patrones prosódicos que podrían diferir entre géneros.
+    """
+    print("\n  Generando: Contornos de entonación (F0 temporal)...")
+
+    # Separar por género
+    girls = [a for a in analyzers if 'ninia' in a.name.lower()]
+    boys = [a for a in analyzers if 'ninio' in a.name.lower()]
+
+    # Crear figura con 2 subplots (niñas arriba, niños abajo)
+    fig, axes = plt.subplots(2, 1, figsize=(16, 10))
+
+    # Niñas
+    for i, analyzer in enumerate(girls):
+        times = []
+        f0_values = []
+
+        for vowel in analyzer.vowels_analysis:
+            if vowel['pitch'] > 0:
+                times.append(vowel['global_time'])
+                f0_values.append(vowel['pitch'])
+
+        if times:
+            color = COLORS_GIRLS[i % len(COLORS_GIRLS)]
+            axes[0].plot(times, f0_values, 'o-', label=analyzer.name,
+                        color=color, alpha=0.7, linewidth=2, markersize=6)
+
+    axes[0].set_ylabel('F0 (Hz)', fontweight='bold', fontsize=12)
+    axes[0].set_title('Contornos de Entonación: Niñas', fontweight='bold', fontsize=13)
+    axes[0].legend(loc='upper right', fontsize=10)
+    axes[0].grid(True, alpha=0.3)
+    axes[0].set_ylim([150, 400])
+
+    # Niños
+    for i, analyzer in enumerate(boys):
+        times = []
+        f0_values = []
+
+        for vowel in analyzer.vowels_analysis:
+            if vowel['pitch'] > 0:
+                times.append(vowel['global_time'])
+                f0_values.append(vowel['pitch'])
+
+        if times:
+            color = COLORS_BOYS[i % len(COLORS_BOYS)]
+            axes[1].plot(times, f0_values, 'o-', label=analyzer.name,
+                        color=color, alpha=0.7, linewidth=2, markersize=6)
+
+    axes[1].set_xlabel('Tiempo (s)', fontweight='bold', fontsize=12)
+    axes[1].set_ylabel('F0 (Hz)', fontweight='bold', fontsize=12)
+    axes[1].set_title('Contornos de Entonación: Niños', fontweight='bold', fontsize=13)
+    axes[1].legend(loc='upper right', fontsize=10)
+    axes[1].grid(True, alpha=0.3)
+    axes[1].set_ylim([150, 400])
+
+    plt.suptitle('Evolución Temporal de F0: Patrones Prosódicos\n' +
+                 '(Cada punto = una vocal detectada)',
+                 fontsize=14, fontweight='bold')
+    plt.tight_layout()
+    plt.savefig('f0_contours_by_gender.png', dpi=150, bbox_inches='tight')
+    print("  ✓ f0_contours_by_gender.png")
+    plt.close()
+
+
 def main():
     """Función principal."""
     print("="*70)
@@ -804,7 +1143,9 @@ def main():
         print(f"   • {f.name}")
 
     # Transcribir con Whisper
-    transcriber = WhisperTranscriber(model_name="base")
+    # Modelo "large" es el más preciso (pero más lento)
+    # Opciones: tiny, base, small, medium, large
+    transcriber = WhisperTranscriber(model_name="large")
 
     transcriptions = {}
     for audio_file in audio_files:
@@ -857,6 +1198,10 @@ def main():
     # Visualizaciones
     create_comparison_visualizations(analyzers, stats_results, girls_vowels, boys_vowels)
 
+    # NUEVAS: Visualizaciones adicionales
+    visualize_by_vowel_type(vowel_type_results, girls_vowels, boys_vowels)
+    visualize_f0_contours(analyzers)
+
     # Guardar resultados estadísticos
     with open('gender_comparison_stats.json', 'w', encoding='utf-8') as f:
         json.dump(stats_results, f, ensure_ascii=False, indent=2)
@@ -873,12 +1218,15 @@ def main():
     print("\n  📊 Visualizaciones:")
     print("    • gender_comparison_statistical.png - Comparaciones estadísticas")
     print("    • vowel_spaces_overlap.png - Espacios vocálicos superpuestos")
+    print("    • gender_by_vowel_comparison.png - Análisis por tipo de vocal (/a/, /e/, /i/, /o/, /u/)")
+    print("    • f0_contours_by_gender.png - Contornos de entonación (evolución temporal F0)")
     print("\n  📈 Datos estadísticos:")
     print("    • gender_comparison_stats.json - Resultados estadísticos generales")
     print("    • gender_by_vowel_stats.json - Resultados por tipo de vocal (/a/, /e/, /i/, /o/, /u/)")
     print("\n🔬 Análisis incluye:")
-    print("  ✓ Clasificación automática de vocales (k-means)")
-    print("  ✓ Comparación estadística por tipo de vocal")
+    print("  ✓ Clasificación automática de vocales (transcripción + validación k-means)")
+    print("  ✓ Comparación estadística por tipo de vocal (/a/, /e/, /i/, /o/, /u/)")
+    print("  ✓ Contornos de entonación (evolución temporal de F0)")
     print("  ✓ Relacionado con Funk & Simpson (2023) sobre percepción de género")
     print("\n💡 Conclusión:")
     print("   Ver interpretación en la salida del análisis estadístico arriba")
