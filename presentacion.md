@@ -7,22 +7,34 @@
 Escuchad estas voces y responded: **¿es un niño o una niña?**
 
 ### Audio 1
-🔊 *[Se reproduce audio_ninio_2.wav]*
+<audio controls>
+  <source src="audio_ninio_2.wav" type="audio/wav">
+</audio>
 
 ### Audio 2
-🔊 *[Se reproduce audio_ninia_1.wav]*
+<audio controls>
+  <source src="audio_ninia_1.wav" type="audio/wav">
+</audio>
 
 ### Audio 3
-🔊 *[Se reproduce audio_ninio_3.wav]*
+<audio controls>
+  <source src="audio_ninio_3.wav" type="audio/wav">
+</audio>
 
 ### Audio 4
-🔊 *[Se reproduce audio_ninia3.wav]*
+<audio controls>
+  <source src="audio_ninia3.wav" type="audio/wav">
+</audio>
 
 ### Audio 5
-🔊 *[Se reproduce audio_ninio_1.wav]*
+<audio controls>
+  <source src="audio_ninio_1.wav" type="audio/wav">
+</audio>
 
 ### Audio 6
-🔊 *[Se reproduce audio_ninia_2.wav]*
+<audio controls>
+  <source src="audio_ninia_2.wav" type="audio/wav">
+</audio>
 
 **Pregunta:** ¿Habéis podido identificar el género de cada voz? ¿Con qué grado de certeza?
 
@@ -32,9 +44,9 @@ Escuchad estas voces y responded: **¿es un niño o una niña?**
 
 ### Lo que dice la investigación
 
-Según Funk & Simpson (2023), podemos identificar el género de voces infantiles con una **precisión del 70-84%**, pero:
+Según Funk & Simpson (2023), identificamos el género de voces infantiles con una **precisión del 70-84%**, muy por encima del azar, pero:
 
-> *"Las diferencias anatómicas entre niños y niñas antes de la pubertad son prácticamente inexistentes"*
+> *"Las diferencias en el aparato fonador entre niños y niñas antes de la pubertad son prácticamente inexistentes"*
 >
 > — Fitch & Giedd (1999)
 
@@ -42,9 +54,9 @@ Según Funk & Simpson (2023), podemos identificar el género de voces infantiles
 
 ---
 
-## Nuestro análisis: los datos acústicos
+## Los datos acústicos
 
-### Métricas extraídas de las grabaciones
+### Parámetros de las grabaciones que escuchasteis
 
 | Grabación | Palabras | Vocales | Pitch (Hz) | F1 (Hz) | F2 (Hz) | F3 (Hz) |
 |-----------|----------|---------|------------|---------|---------|---------|
@@ -62,15 +74,19 @@ Los rangos se **solapan completamente**. No hay diferencias estadísticamente si
 
 ## Entendiendo la acústica de la voz
 
-### ¿Qué son estos parámetros?
+### El Pitch (frecuencia fundamental, F₀)
 
-#### **Pitch (frecuencia fundamental, F₀)**
 - La "altura" de la voz (grave o aguda)
 - Producido por la vibración de las cuerdas vocales
 - En niños prepuberales: **200-350 Hz** (similar en ambos sexos)
 - Para comparar: adultos varones ~120 Hz, mujeres adultas ~220 Hz
 
-#### **Formantes (F1, F2, F3)**
+---
+
+## Entendiendo la acústica de la voz (II)
+
+### Los Formantes (F1, F2, F3)
+
 - Frecuencias de resonancia del tracto vocal
 - Determinan la **calidad** de las vocales (/a/, /e/, /i/, /o/, /u/)
 - Relacionados con la **longitud del tracto vocal**
@@ -81,12 +97,16 @@ Los rangos se **solapan completamente**. No hay diferencias estadísticamente si
 
 ---
 
-## Visualización de los resultados
+## Las visualizaciones acústicas
 
 ### Espacio vocálico F1-F2
 ![Comparación de vocales](comparacion_vocales_rigurosa.png)
 
 **Interpretación:** Las elipses muestran la distribución de las vocales de cada hablante. El solapamiento es evidente.
+
+---
+
+## Las visualizaciones acústicas (II)
 
 ### Distribución del pitch
 ![Comparación de pitch](comparacion_pitch_rigurosa.png)
@@ -97,14 +117,19 @@ Los rangos se **solapan completamente**. No hay diferencias estadísticamente si
 
 ## La paradoja: ¿cómo diferenciamos entonces?
 
-### Lo que las referencias nos dicen
+### Lo que sabemos de la percepción
 
 #### Barreda & Assmann (2021)
 > *"La percepción del género y la edad del hablante están **entrelazadas**. Los oyentes usan información sobre la edad para informar sus juicios de género"*
 
-**Implicación:** No basta con analizar la voz en un momento puntual. El contexto y las expectativas importan.
+**Implicación:** El contexto y las expectativas importan.
 
-#### Funk & Simpson (2023)
+---
+
+## Lo que sabemos de la percepción (II)
+
+### Funk & Simpson (2023)
+
 Identificaron varios factores clave:
 
 1. **Pitch como predictor principal** (aunque con mucho solapamiento)
@@ -115,37 +140,57 @@ Identificaron varios factores clave:
 
 ## La respuesta: no es solo la anatomía
 
-### Tres factores que explican la percepción
+### Factor 1: Diferencias comportamentales
 
-#### 1. **Diferencias comportamentales (conductuales)**
 - Desde los 2-3 años, los niños internalizan estereotipos de género
 - Pueden **modificar voluntariamente** su voz para sonar más "masculinos" o "femeninos"
 - Cartei et al. (2019): niños de 6-10 años pueden controlar la expresión de masculinidad/feminidad en su voz
 
-#### 2. **Información prosódica**
+---
+
+## La respuesta: no es solo la anatomía (II)
+
+### Factor 2: Información prosódica
+
 - Patrones de entonación
 - Ritmo del habla
 - Variabilidad temporal y espectral
 - **Mucho más evidente en frases completas que en sílabas aisladas**
 
-#### 3. **Información contextual**
+---
+
+## La respuesta: no es solo la anatomía (III)
+
+### Factor 3: Información contextual
+
 - Duración del estímulo (mejor en oraciones que en vocales aisladas)
 - Conocimiento de la edad aproximada del hablante
 - Expectativas culturales
 
 ---
 
-## Conclusiones: lo aprendido
+## Conclusiones
 
-### 1. Las diferencias acústicas prepuberales son sutiles
+### Las diferencias acústicas prepuberales son sutiles
+
 - No hay dimorfismo sexual anatómico significativo antes de la pubertad
 - Los parámetros acústicos básicos (pitch, formantes) **se solapan completamente**
 
-### 2. Pero la percepción es robusta
+---
+
+## Conclusiones (II)
+
+### Pero la percepción es robusta
+
 - Identificamos correctamente el género en ~70-80% de los casos
 - La precisión mejora con más contexto (oraciones vs sílabas aisladas)
 
-### 3. La voz como práctica social
+---
+
+## Conclusiones (III)
+
+### La voz como práctica social
+
 - Los niños **aprenden y practican** patrones de habla asociados a su género
 - La voz no solo refleja anatomía, sino **identidad de género**
 - Esto tiene implicaciones importantes:
@@ -185,6 +230,7 @@ La voz infantil nos muestra que el género **no es solo biología**:
 - Los niños pueden modificar voluntariamente su voz
 - Evidencia directa de la naturaleza performativa del género en la voz
 
+<!--
 ---
 
 ## Metodología del análisis
@@ -202,28 +248,5 @@ La voz infantil nos muestra que el género **no es solo biología**:
 ❌ NO promediamos formantes sobre frases completas → no tiene significado fonético
 ❌ NO calculamos pitch en consonantes sordas → distorsiona los resultados
 ❌ NO reportamos valores sin incertidumbre → no es científico
+-->
 
----
-
-## Preguntas para el debate
-
-1. ¿Creéis que los niños son conscientes de que modifican su voz para sonar más "masculinos" o "femeninos"?
-
-2. Si las diferencias anatómicas son mínimas, ¿de dónde aprenden los niños estos patrones vocales?
-
-3. ¿Qué implicaciones tiene esto para nuestra comprensión del género como constructo social vs biológico?
-
-4. ¿Debería esto cambiar nuestra aproximación a la terapia de voz para niños transgénero?
-
----
-
-## ¡Gracias por vuestra atención!
-
-### Materiales disponibles
-- Código del análisis: `analyze_voices_rigorous.py`
-- Datos: `metricas_rigurosas.csv`
-- Visualizaciones: carpeta del repositorio
-- Referencias completas en el README
-
-**Contacto y preguntas:**
-[vuestro email/información de contacto]
